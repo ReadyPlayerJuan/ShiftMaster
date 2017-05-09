@@ -86,7 +86,11 @@ class Sounds {
     }
     
     static func playSound(_ index: Int) {
-        playSound(allSounds[index])
+        if(index < allSounds.count) {
+            playSound(allSounds[index])
+        } else {
+            print("could not play sound: sound missing")
+        }
     }
     
     static func playSound(_ name: String) {
@@ -96,10 +100,15 @@ class Sounds {
                 return
             }
         }
+        print("could not play sound: sound missing")
     }
     
     private static func playSound(_ s: sound) {
-        s.player?.play()
+        if(s.player != nil) {
+            s.player?.play()
+        } else {
+            print("could not play sound: AVAudioPlayer missing")
+        }
     }
     
     static func getSound(_ index: Int) -> sound {

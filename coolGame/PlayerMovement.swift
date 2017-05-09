@@ -39,7 +39,23 @@ extension Player {
         
         if(jumping) {
             if(y == Double(Int(y)) && verticalMovementTimer == 0) {
+                //jump
                 verticalMovementTimer = -GameState.jumpLength
+                
+                //jump particles
+                let numParticles = Int(2.5+(rand()*0.9))
+                for i in 0...numParticles-1 {
+                    var xPos: Double = rand()
+                    var angle: Double
+                    
+                    xPos = (rand() * (1.0 / Double(numParticles))) + (Double(i) / Double(numParticles))
+                    angle = ((rand() * 60) - 30) - ((1 - xPos) * 180)
+                    
+                    let block = Board.blocks[Int(y + 1.5)][Int(x+xPos)]!
+                    if(block.type != 0 && block.type != 5 && Entity.collides(this: self, with: block)) {
+                        EntityManager.addParticle(particle: Particle.init(x: x+xPos, y: y + ((rand() - 0.5) * 0.2), angle: angle, distance: 0.2 + (rand()*0.2), shape: 0, color: block.color, lifeTime: 0.3+(rand()*0.3), deathType: 0))
+                    }
+                }
             }
         }
         let prevHeight = GameState.heightAt(time: verticalMovementTimer)
@@ -334,7 +350,8 @@ extension Player {
                                 horizontalMovementTimer = 0
                                 updateSprite()
                                 
-                                GameState.gameAction(type: "invert")
+                                GameState.gameAction(type: "reveal colors")
+                                //GameState.gameAction(type: "invert")
                             } else if(b.type == 9 && (x != b.x || y != b.y) && !b.gainedAbility) {
                                 nextX = entity.nextX
                                 x = nextX

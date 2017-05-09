@@ -162,7 +162,6 @@ class EditorManager {
                         exitStageButton.sprite[0].alpha = 1.0
                     }
                     if(quit.action) {
-                        print("lkj")
                         Memory.saveStageEdit(code: encodeStageEdit())
                         GameState.currentlyEditing = false
                         GameState.inEditor = false
@@ -215,7 +214,6 @@ class EditorManager {
                                 let moveSpeed: CGFloat = 1.0 / CGFloat(Board.blockSize)
                                 camera.x += -moveSpeed * (((InputController.currentTouches[0].x) - (InputController.prevTouches[0].x)) + ((InputController.currentTouches[1].x) - (InputController.prevTouches[1].x)))/2
                                 camera.y -= -moveSpeed * (((InputController.currentTouches[0].y) - (InputController.prevTouches[0].y)) + ((InputController.currentTouches[1].y) - (InputController.prevTouches[1].y)))/2
-                                
                                 let point0 = InputController.currentTouches[0]
                                 let point1 = InputController.currentTouches[1]
                                 let prevPoint0 = InputController.prevTouches[0]

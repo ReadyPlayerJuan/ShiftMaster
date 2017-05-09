@@ -70,9 +70,29 @@ class GameState {
     static let inversionParticlesPerSecond = 90.0
     static var inversionColorIndexes = [Int]()
     
+    static var colorRevealTimer = 0.0
+    static let colorRevealTimerMax = 2.0
+    static var coloredBlocksVisible = true
+    
     static var gainAbilityTimer = 0.0
     static let gainAbilityTimerMax = 15.0
     
+    //static private let GAshiftFactor = 0.84
+    static let GArotateTimerMin = 0.0
+    static let GArotateTimerMax = 0.672
+    static let GAshadeChangeTimerMin = 0.546
+    static let GAshadeChangeTimerMax = 0.672
+    static let GAscreenFloodTimerMin = 0.672
+    static let GAscreenFloodTimerMax = 0.722
+    static let GAscreenFloodTimerMin2 = 0.764
+    static let GAscreenFloodTimerMax2 = 0.798
+    static let GAspinningLightTimerMin = 0.0
+    static let GAspinningLightTimerMax = GAscreenFloodTimerMax
+    static let GAexplosionTimerMin = 0.798
+    static let GAexplosionTimerMax = 0.97
+    static let GAscreenRotateTimerMin = 0.067
+    static let GAscreenRotateTimerMax = 0.672
+    /*
     static private let GAshiftFactor = 0.84
     static let GArotateTimerMin = 0.0 * GAshiftFactor
     static let GArotateTimerMax = 0.8 * GAshiftFactor
@@ -87,13 +107,13 @@ class GameState {
     static let GAexplosionTimerMin = 0.95 * GAshiftFactor
     static let GAexplosionTimerMax = 0.97
     static let GAscreenRotateTimerMin = 0.08 * GAshiftFactor
-    static let GAscreenRotateTimerMax = 0.8 * GAshiftFactor
+    static let GAscreenRotateTimerMax = 0.8 * GAshiftFactor*/
     
-    static let maxMoveSpeed = 4.2
+    static let maxMoveSpeed = 3.8
     static let slideLength = 0.1
     static let accelerationBonus = 3.0
     static let jumpHeight = 2.25
-    static let jumpLength = 0.38
+    static let jumpLength = 0.40
     static let gravity = jumpHeight / (pow(jumpLength, 2))
     
     static var testing = false
@@ -171,7 +191,7 @@ class GameState {
         } else if(state == "in menu") {
             //handled by other scenes
         } else if(state == "in editor") {
-            
+            Camera.centerOnEditorCamera()
         } else if(state == "stage transition") {
             firstFrame = false
             lastFrame = false
@@ -337,6 +357,24 @@ class GameState {
             
             inversionBorderSprite.position = CGPoint.init(x: (getInversionLinePosition())*Board.blockSize, y: -(EntityManager.getPlayer()!.y - 0.5)*Board.blockSize)
             Camera.centerOnPlayer()
+        } else if(state == "revealing colors") {
+            firstFrame = false
+            lastFrame = false
+            
+            if(colorRevealTimer == colorRevealTimerMax) {
+                actionFirstFrame()
+            }
+            
+            colorRevealTimer -= currentDelta
+            
+            if(colorRevealTimer <= 0) {
+                colorRevealTimer = 0
+                actionLastFrame()
+            }
+            
+            EntityManager.updateEntities(delta: currentDelta)
+            
+            Camera.centerOnPlayer()
         } else if(state == "gaining ability") {
             firstFrame = false
             lastFrame = false
@@ -401,6 +439,10 @@ class GameState {
             state = "inverting"
             playerState = "paused"
             inversionTimer = inversionTimerMax
+        } else if(type == "reveal colors") {
+            state = "revealing colors"
+            playerState = "paused"
+            colorRevealTimer = colorRevealTimerMax
         } else if(type == "gain ability") {
             playerState = "paused"
             state = "gaining ability"
@@ -513,6 +555,8 @@ class GameState {
                     }
                 }
             }
+        } else if(state == "revealing colors") {
+            
         } else if(state == "gaining ability") {
             Camera.shake(forTime: gainAbilityTimerMax * GAscreenFloodTimerMax, withIntensity: 0.5, dropoff: false)
         }
@@ -561,6 +605,20 @@ class GameState {
             for row in 0...Board.blocks.count-1 {
                 for col in 0...Board.blocks[0].count-1 {
                     Board.blocks[row][col]!.finishInversion()
+                }
+            }
+            EntityManager.reloadAllEntities()
+        } else if(state == "revealing colors") {
+            coloredBlocksVisible = true
+            playerState = "free"
+            state = "in game"
+            if(currentlyEditing) {
+                state = "in editor"
+            }
+            
+            for row in 0...Board.blocks.count-1 {
+                for col in 0...Board.blocks[0].count-1 {
+                    Board.blocks[row][col]!.finishColorReveal()
                 }
             }
             EntityManager.reloadAllEntities()
@@ -653,6 +711,16 @@ class GameState {
         return minX + (((Double(screenWidth) / Board.blockSize) + 2) * (1-(max(0.0, (inversionTimer+currentDelta)) / inversionTimerMax)))
     }
     
+    class func getColorRevealLinePosition() -> Double {
+        let minX = (EntityManager.getPlayer()!.x) - (Double(screenWidth / 2) / Board.blockSize) - 1
+        return minX + (((Double(screenWidth) / Board.blockSize) + 2) * (1-(colorRevealTimer / colorRevealTimerMax)))
+    }
+    
+    class func getPrevColorRevealLinePosition() -> Double {
+        let minX = (EntityManager.getPlayer()!.x) - (Double(screenWidth / 2) / Board.blockSize) - 1
+        return minX + (((Double(screenWidth) / Board.blockSize) + 2) * (1-(max(0.0, (colorRevealTimer+currentDelta)) / colorRevealTimerMax)))
+    }
+    
     class func getRotationValue() -> Double {
         var b = rotateTimer / rotateTimerMax
         let bottomHalf = b < 0.5
@@ -721,6 +789,10 @@ class GameState {
     }
     
     class func getGainAbilityRotation() -> Double {
+        if(Player.maxAbilities != 0) {
+            return 0
+        }
+        
         var b = (max(GAscreenRotateTimerMin, min(GAscreenRotateTimerMax, 1-(gainAbilityTimer / gainAbilityTimerMax))) - GAscreenRotateTimerMin) / (GAscreenRotateTimerMax - GAscreenRotateTimerMin)
         let bottomHalf = b < 0.5
         b -= 0.5

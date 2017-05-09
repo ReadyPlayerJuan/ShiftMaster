@@ -21,6 +21,7 @@
 		713A8C721EBD5B03009A1E48 /* shiftLoop.wav in Resources */ = {isa = PBXBuildFile; fileRef = 713A8C711EBD5B03009A1E48 /* shiftLoop.wav */; };
 		713A8C741EBD5B31009A1E48 /* shiftIntro.wav in Resources */ = {isa = PBXBuildFile; fileRef = 713A8C731EBD5B31009A1E48 /* shiftIntro.wav */; };
 		715AB9291E78B3CA0018FC9F /* Camera.swift in Sources */ = {isa = PBXBuildFile; fileRef = 715AB9281E78B3CA0018FC9F /* Camera.swift */; };
+		715C1DB51EBFFBF700791D83 /* GainAbilityAnimation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 715C1DB41EBFFBF700791D83 /* GainAbilityAnimation.swift */; };
 		716D99991E60F12300822464 /* MenuButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 716D99981E60F12300822464 /* MenuButton.swift */; };
 		716D999C1E60FCE800822464 /* TestingScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 716D999B1E60FCE800822464 /* TestingScene.swift */; };
 		716D999E1E60FCFA00822464 /* TestingScene.sks in Resources */ = {isa = PBXBuildFile; fileRef = 716D999D1E60FCFA00822464 /* TestingScene.sks */; };
@@ -90,6 +91,7 @@
 		713A8C711EBD5B03009A1E48 /* shiftLoop.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = shiftLoop.wav; sourceTree = "<group>"; };
 		713A8C731EBD5B31009A1E48 /* shiftIntro.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = shiftIntro.wav; sourceTree = "<group>"; };
 		715AB9281E78B3CA0018FC9F /* Camera.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Camera.swift; sourceTree = "<group>"; };
+		715C1DB41EBFFBF700791D83 /* GainAbilityAnimation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GainAbilityAnimation.swift; sourceTree = "<group>"; };
 		716D99981E60F12300822464 /* MenuButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MenuButton.swift; sourceTree = "<group>"; };
 		716D999B1E60FCE800822464 /* TestingScene.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TestingScene.swift; sourceTree = "<group>"; };
 		716D999D1E60FCFA00822464 /* TestingScene.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = TestingScene.sks; sourceTree = "<group>"; };
@@ -320,6 +322,7 @@
 				71CD0D7C1E50DFCA001198AB /* LightSource.swift */,
 				71CD0D7A1E50DF60001198AB /* LineSegment.swift */,
 				71BB80FD1E203B5300024D90 /* Block.swift */,
+				715C1DB41EBFFBF700791D83 /* GainAbilityAnimation.swift */,
 				71BB810A1E203B5300024D90 /* MovingBlock.swift */,
 				71EA931C1E7E121300BBCA67 /* PlayerGhost.swift */,
 				7105A1661E6A18C9005B3487 /* ShapeLayer.swift */,
@@ -532,6 +535,7 @@
 				71BB812C1E248E2B00024D90 /* StageSet2.swift in Sources */,
 				71BB81181E203B5300024D90 /* MenuScene.swift in Sources */,
 				71BB811A1E203B5300024D90 /* MovingBlock.swift in Sources */,
+				715C1DB51EBFFBF700791D83 /* GainAbilityAnimation.swift in Sources */,
 				71BB810F1E203B5300024D90 /* ColorTheme.swift in Sources */,
 				71BB81281E244C1200024D90 /* Stage.swift in Sources */,
 				71BB81131E203B5300024D90 /* Entity.swift in Sources */,

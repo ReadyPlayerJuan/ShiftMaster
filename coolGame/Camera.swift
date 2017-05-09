@@ -85,8 +85,8 @@ class Camera {
     }
     
     class func centerOnDeathVector() {
-        targetX = -((Double((EntityManager.getPlayer() as! Player).getCenter().x) + Double(GameState.getDeathVector().dx) + 0.5) * Double(Board.blockSize))
-        targetY = ((Double((EntityManager.getPlayer() as! Player).getCenter().y) + Double(GameState.getDeathVector().dy) - 0.5) * Double(Board.blockSize))
+        targetX = -((Double((EntityManager.getPlayer() as! Player).getCenter().x) + Double(GameState.getDeathVector().dx) + 0.0) * Double(Board.blockSize))
+        targetY = ((Double((EntityManager.getPlayer() as! Player).getCenter().y) + Double(GameState.getDeathVector().dy) - 0.0) * Double(Board.blockSize))
     }
     
     class func centerOnStageTransitionVector() {

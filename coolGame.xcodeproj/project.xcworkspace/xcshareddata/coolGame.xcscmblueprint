@@ -1,15 +1,17 @@
 {
-  "DVTSourceControlWorkspaceBlueprintPrimaryRemoteRepositoryKey" : "24143EFF9C5F983C5F12A17770E059802E57B70D",
+  "DVTSourceControlWorkspaceBlueprintPrimaryRemoteRepositoryKey" : "7D64125EB327148B959FB0FA84A54AD83BE95563",
   "DVTSourceControlWorkspaceBlueprintWorkingCopyRepositoryLocationsKey" : {
 
   },
   "DVTSourceControlWorkspaceBlueprintWorkingCopyStatesKey" : {
     "24143EFF9C5F983C5F12A17770E059802E57B70D" : 9223372036854775807,
+    "7D64125EB327148B959FB0FA84A54AD83BE95563" : 9223372036854775807,
     "A10A434486C76486D8EB52AD6B5BA5DDB23F3470" : 9223372036854775807
   },
   "DVTSourceControlWorkspaceBlueprintIdentifierKey" : "BF5B08BE-514F-42C4-8B22-09D01AF3273B",
   "DVTSourceControlWorkspaceBlueprintWorkingCopyPathsKey" : {
     "24143EFF9C5F983C5F12A17770E059802E57B70D" : "coolGame\/",
+    "7D64125EB327148B959FB0FA84A54AD83BE95563" : "ShiftMaster\/",
     "A10A434486C76486D8EB52AD6B5BA5DDB23F3470" : "another%20test%20game\/"
   },
   "DVTSourceControlWorkspaceBlueprintNameKey" : "coolGame",
@@ -20,6 +22,11 @@
       "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/ReadyPlayerJuan\/coolGame.git",
       "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
       "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "24143EFF9C5F983C5F12A17770E059802E57B70D"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/ReadyPlayerJuan\/ShiftMaster.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "7D64125EB327148B959FB0FA84A54AD83BE95563"
     },
     {
       "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/ReadyPlayerJuan\/another-test-game.git",

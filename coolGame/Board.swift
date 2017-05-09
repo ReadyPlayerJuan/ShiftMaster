@@ -51,7 +51,7 @@ class Board {
                 //let ID = Memory.getCurrentStageID()
                 let ID = -1 + Int(rand() * 0)
                 if(ID == -1) {
-                    currentStage = hubStage
+                    currentStage = hubStage.children[0]
                 } else {
                     if(hubStage.findStageWithID(ID, baseID: hubStage.ID) != nil) {
                         currentStage = hubStage.findStageWithID(ID, baseID: hubStage.ID)
