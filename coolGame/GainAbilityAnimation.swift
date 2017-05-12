@@ -53,7 +53,7 @@ extension Block {
                     let maxAngleDifference = (120.0 / Double(numShadows + 1)) * (3.14159 / 180.0)
                     let finalShadowAlpha0 = 0.5
                     let finalShadowAlpha1 = 0.1
-                    let finalColorShade = 0.4
+                    let colorShade = max(0, min(1, (rotateProg * 1.5) - 0.2))
                     
                     for j in 0...numShadows-1 {
                         let angleDifference = maxAngleDifference * Double((numShadows-1-j) + 1) * pow(rotateProg, 1)
@@ -86,19 +86,20 @@ extension Block {
                         
                         s.children[j].zRotation = CGFloat(angleDifference)
                         let alpha = CGFloat(((pow(Double(j + 1) / Double(numShadows + 1), 3)) * (1 - shadeChangeProg)) + (shadeChangeProg * finalShadowAlpha))
-                        let currentColor = /*rotateProg +*/ (Double(i) / 3.0) //+ ((Double(j) / Double(numShadows)) / 6.0)
+                        
+                        let currentColor = 1 + ((rotateProg * 2.0) - 0.0) + (Double(i) / 8.0) + ((1 - (Double(j) / Double(numShadows))) / 8.0)
                         if(i%2 == 0) {
-                            (s.children[j] as! SKShapeNode).fillColor = UIColor.init(red: CGFloat(1.0 * (1 - rotateProg)) + (getRainbowColor(prog: currentColor)[0] * CGFloat(rotateProg)), green: CGFloat(1.0 * (1 - rotateProg)) + (getRainbowColor(prog: currentColor)[1] * CGFloat(rotateProg)), blue: CGFloat(1.0 * (1 - rotateProg)) + (getRainbowColor(prog: currentColor)[2] * CGFloat(rotateProg)), alpha: alpha)
+                            (s.children[j] as! SKShapeNode).fillColor = UIColor.init(red: CGFloat(1 - colorShade) + (getRainbowColor(prog: currentColor)[0] * CGFloat(colorShade)), green: CGFloat(1 - colorShade) + (getRainbowColor(prog: currentColor)[1] * CGFloat(colorShade)), blue: CGFloat(1 - colorShade) + (getRainbowColor(prog: currentColor)[2] * CGFloat(colorShade)), alpha: alpha)
                         } else {
-                            (s.children[j] as! SKShapeNode).fillColor = UIColor.init(red: CGFloat(0.0 * (1 - rotateProg)) + (getRainbowColor(prog: currentColor)[0] * CGFloat(rotateProg)), green: CGFloat(0.0 * (1 - rotateProg)) + (getRainbowColor(prog: currentColor)[1] * CGFloat(rotateProg)), blue: CGFloat(0.0 * (1 - rotateProg)) + (getRainbowColor(prog: currentColor)[2] * CGFloat(rotateProg)), alpha: alpha)
+                            (s.children[j] as! SKShapeNode).fillColor = UIColor.init(red: (getRainbowColor(prog: currentColor)[0] * CGFloat(colorShade)), green: (getRainbowColor(prog: currentColor)[1] * CGFloat(colorShade)), blue: (getRainbowColor(prog: currentColor)[2] * CGFloat(colorShade)), alpha: alpha)
                         }
                     }
+                    let currentColor = 1 + ((rotateProg * 2.0) - 0.0) + (Double(i) / 8.0)
                     
-                    let currentColor = /*rotateProg +*/ (Double(i) / 3.0)
                     if(i%2 == 0) {
-                        s.fillColor = UIColor.init(red: CGFloat(1.0 * (1 - rotateProg)) + (getRainbowColor(prog: currentColor)[0] * CGFloat(rotateProg)), green: CGFloat(1.0 * (1 - rotateProg)) + (getRainbowColor(prog: currentColor)[1] * CGFloat(rotateProg)), blue: CGFloat(1.0 * (1 - rotateProg)) + (getRainbowColor(prog: currentColor)[2] * CGFloat(rotateProg)), alpha: 1.0)
+                        s.fillColor = UIColor.init(red: CGFloat(1 - colorShade) + (getRainbowColor(prog: currentColor)[0] * CGFloat(colorShade)), green: CGFloat(1 - colorShade) + (getRainbowColor(prog: currentColor)[1] * CGFloat(colorShade)), blue: CGFloat(1 - colorShade) + (getRainbowColor(prog: currentColor)[2] * CGFloat(colorShade)), alpha: CGFloat(finalShadowAlpha0))
                     } else {
-                        s.fillColor = UIColor.init(red: CGFloat(0.0 * (1 - rotateProg)) + (getRainbowColor(prog: currentColor)[0] * CGFloat(rotateProg)), green: CGFloat(0.0 * (1 - rotateProg)) + (getRainbowColor(prog: currentColor)[1] * CGFloat(rotateProg)), blue: CGFloat(0.0 * (1 - rotateProg)) + (getRainbowColor(prog: currentColor)[2] * CGFloat(rotateProg)), alpha: 1.0)
+                        s.fillColor = UIColor.init(red: (getRainbowColor(prog: currentColor)[0] * CGFloat(colorShade)), green: (getRainbowColor(prog: currentColor)[1] * CGFloat(colorShade)), blue: (getRainbowColor(prog: currentColor)[2] * CGFloat(colorShade)), alpha: CGFloat(finalShadowAlpha0))
                     }
                     
                     s.zRotation = CGFloat(rotateProg * maxRotation * (3.14159 * (2.0 / 3.0)))
@@ -158,7 +159,11 @@ extension Block {
                                     path.addLine(to: CGPoint.init(x: distance * cos(angle + (3.14159 * (4.0 / 3))), y: distance * sin(angle + (3.14159 * (4.0 / 3)))))
                                     
                                     let sp = SKShapeNode.init(path: path.cgPath)
-                                    sp.fillColor = s.fillColor
+                                    if(i%2 == 0) {
+                                        sp.fillColor = UIColor.init(white: 1.0, alpha: s.fillColor.cgColor.components![3])
+                                    } else {
+                                        sp.fillColor = UIColor.init(white: 0.0, alpha: s.fillColor.cgColor.components![3])
+                                    }
                                     sp.strokeColor = UIColor.clear
                                     sp.position = center
                                     sp.zPosition = s.zPosition
@@ -203,7 +208,12 @@ extension Block {
                                     path.addLine(to: CGPoint.init(x: distance * cos(angle + (3.14159 * (4.0 / 3))), y: distance * sin(angle + (3.14159 * (4.0 / 3)))))
                                     
                                     let sp = SKShapeNode.init(path: path.cgPath)
-                                    sp.fillColor = s.fillColor
+                                    //sp.fillColor = s.fillColor
+                                    if(i%2 == 0) {
+                                        sp.fillColor = UIColor.init(white: 1.0, alpha: s.fillColor.cgColor.components![3])
+                                    } else {
+                                        sp.fillColor = UIColor.init(white: 0.0, alpha: s.fillColor.cgColor.components![3])
+                                    }
                                     sp.strokeColor = UIColor.clear
                                     sp.position = center
                                     sp.zPosition = s.zPosition
@@ -268,7 +278,12 @@ extension Block {
                                             path.addLine(to: CGPoint.init(x: distance * cos(angle + (3.14159 * (4.0 / 3))), y: distance * sin(angle + (3.14159 * (4.0 / 3)))))
                                             
                                             let sp = SKShapeNode.init(path: path.cgPath)
-                                            sp.fillColor = (s.children[j] as! SKShapeNode).fillColor
+                                            //sp.fillColor = (s.children[j] as! SKShapeNode).fillColor
+                                            if(i%2 == 0) {
+                                                sp.fillColor = UIColor.init(white: 1.0, alpha: (s.children[j] as! SKShapeNode).fillColor.cgColor.components![3])
+                                            } else {
+                                                sp.fillColor = UIColor.init(white: 0.0, alpha: (s.children[j] as! SKShapeNode).fillColor.cgColor.components![3])
+                                            }
                                             sp.strokeColor = UIColor.clear
                                             sp.position = center
                                             sp.zPosition = s.zPosition
@@ -313,7 +328,12 @@ extension Block {
                                             path.addLine(to: CGPoint.init(x: distance * cos(angle + (3.14159 * (4.0 / 3))), y: distance * sin(angle + (3.14159 * (4.0 / 3)))))
                                             
                                             let sp = SKShapeNode.init(path: path.cgPath)
-                                            sp.fillColor = (s.children[j] as! SKShapeNode).fillColor
+                                            //sp.fillColor = (s.children[j] as! SKShapeNode).fillColor
+                                            if(i%2 == 0) {
+                                                sp.fillColor = UIColor.init(white: 1.0, alpha: (s.children[j] as! SKShapeNode).fillColor.cgColor.components![3])
+                                            } else {
+                                                sp.fillColor = UIColor.init(white: 0.0, alpha: (s.children[j] as! SKShapeNode).fillColor.cgColor.components![3])
+                                            }
                                             sp.strokeColor = UIColor.clear
                                             sp.position = center
                                             sp.zPosition = s.zPosition
@@ -367,6 +387,11 @@ extension Block {
                     }
                     
                     lightingInfo[lightingInfo.count-1].append(prog)
+                    
+                    var color = getRainbowColor(prog: rand())
+                    for j in 0...2 {
+                        lightingInfo[lightingInfo.count-1].append(Double(color[j]))
+                    }
                 }
                 
                 
@@ -384,6 +409,8 @@ extension Block {
                             let angle = (lightingInfo[j][0] * (1 - lightMovementProg)) + (lightMovementProg * lightingInfo[j][2])
                             let lightAngleRange = ((lightMovementProg * 0.7) + 0.3) * maxAngleRange
                             let angleRange = min(1, (prog - lightingInfo[j][3]) / timeToMaxRange) * lightAngleRange
+                            let coloredAmount = 0.35
+                            let color = [lightingInfo[j][3], lightingInfo[j][4], lightingInfo[j][5]];
                             
                             if(angleRange > 0) {
                                 let path = UIBezierPath.init()
@@ -392,7 +419,7 @@ extension Block {
                                 path.addLine(to: CGPoint.init(x: length*cos((angle + angleRange/2) * (3.14159 / 180.0)), y: length*sin((angle + angleRange/2) * (3.14159 / 180.0))))
                                 
                                 let s = SKShapeNode.init(path: path.cgPath)
-                                s.fillColor = UIColor.white
+                                s.fillColor = UIColor.init(red: (CGFloat(color[0] * coloredAmount)) + CGFloat(1 - coloredAmount), green: (CGFloat(color[1] * coloredAmount)) + CGFloat(1 - coloredAmount), blue: (CGFloat(color[2] * coloredAmount)) + CGFloat(1 - coloredAmount), alpha: 1.0)
                                 s.strokeColor = UIColor.clear
                                 s.alpha = CGFloat((minAlpha * (1 - lightSpawnProg)) + (maxAlpha * lightSpawnProg))
                                 sprite.children[i].addChild(s)
@@ -416,6 +443,32 @@ extension Block {
                         addExplosionSprites = true
                         explosionSprites = [SKShapeNode]()
                         explosionSpriteInfo = [[Double]]()
+                        
+                        
+                        GameState.coloredBlocksUnlocked = true
+                        GameState.coloredBlocksVisible = true
+                        for row in 0...Board.blocks.count-1 {
+                            for col in 0...Board.blocks[0].count-1 {
+                                Board.blocks[row][col]!.finishColorReveal()
+                            }
+                        }
+                        EntityManager.reloadAllEntities()
+                    } else {
+                        
+                    }
+                    
+                    if(!GameState.coloredBlocksUnlocked) {
+                        
+                        GameState.coloredBlocksUnlocked = true
+                        /*GameState.coloredBlocksVisible = true
+                        for row in 0...Board.blocks.count-1 {
+                            for col in 0...Board.blocks[0].count-1 {
+                                if(Board.blocks[row][col]!.type != 9) {
+                                    Board.blocks[row][col]!.finishColorReveal()
+                                }
+                            }
+                        }
+                        EntityManager.redrawEntities(node: GameState.drawNode, name: "all")*/
                     } else {
                         
                     }
@@ -428,7 +481,7 @@ extension Block {
                 let s = sprite.children[i] as! SKShapeNode
                 
                 //explosionSpriteInfo:
-                //              0                          1                        2                  3                    4             5
+                //              0                          1                        2                   3                   4             5
                 // starting angle from center   ending angle from center    starting distance   starting rotation    ending rotation    delay
                 
                 let maxDistanceBase = 1.3 * Board.blockSize
@@ -537,6 +590,9 @@ extension Block {
                             let unGlowProg = (max(GameState.GAexplosionTimerMax, min(1.0, prog)) - GameState.GAexplosionTimerMax) / (1.0 - GameState.GAexplosionTimerMax)
                             let glowProg = (min(1, explosionProg) - (1 - maxDelay)) / (1 - (1 - maxDelay))
                             
+                            sp.fillColor = UIColor.init(white: 1.0, alpha: 0.1)
+                            sp.zPosition = 6
+                            
                             if(explosionProg < 1 - maxDelay) {
                                 sp.alpha = CGFloat(max(0, 1 - (explosionProg * 4)))
                             } else if(unGlowProg > 0) {
@@ -557,7 +613,7 @@ extension Block {
         let progression = prog * 6
         var currentColor = Int(progression)
         var nextColor = Int(progression)+1
-        var colorProgression = progression - Double(Int(progression))
+        let colorProgression = progression - Double(Int(progression))
         /*if(decreasing) {
             currentColor += 1
             nextColor -= 1
@@ -570,6 +626,6 @@ extension Block {
             nextColor -= 6
         }
         
-        return [(rainbow[currentColor][0] * CGFloat(1-colorProgression))+(rainbow[nextColor][0] * CGFloat(colorProgression)), (rainbow[currentColor][1] * CGFloat(1-progression))+(rainbow[nextColor][1] * CGFloat(colorProgression)), (rainbow[currentColor][2] * CGFloat(1-colorProgression))+(rainbow[nextColor][2] * CGFloat(colorProgression))]
+        return [(rainbow[currentColor][0] * CGFloat(1-colorProgression))+(rainbow[nextColor][0] * CGFloat(colorProgression)), (rainbow[currentColor][1] * CGFloat(1-colorProgression))+(rainbow[nextColor][1] * CGFloat(colorProgression)), (rainbow[currentColor][2] * CGFloat(1-colorProgression))+(rainbow[nextColor][2] * CGFloat(colorProgression))]
     }
 }

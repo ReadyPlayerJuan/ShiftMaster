@@ -21,6 +21,8 @@ class Block: Entity {
     
     var sprite2: SKShapeNode?
     var inversionSprite: SKShapeNode?
+    var inversionSprite2: SKShapeNode?
+    var revealColorSprite: SKShapeNode?
     
     var hazardCycle = 15.0
     var colorProgressionBase = 0.0
@@ -516,7 +518,7 @@ class Block: Entity {
                 }
             }
         } else if(GameState.state == "revealing colors") {
-            if(type == 7) {
+            /*if(type == 7) {
                 //sprite2!.alpha = 0.0
             } else if(type == 6) {
                 updateColor()
@@ -630,7 +632,34 @@ class Block: Entity {
                         inversionSprite!.fillColor = color
                     }
                 }
+             }*/
+            let colorRevealProg = 1 - (GameState.colorRevealTimer / GameState.colorRevealTimerMax)
+            
+            if(inversionSprite != nil) {
+                inversionSprite!.removeFromParent()
             }
+            
+            inversionSprite = SKShapeNode.init(rect: CGRect.init(x: 0, y: 0, width: Board.blockSize, height: Board.blockSize))
+            inversionSprite!.fillColor = color
+            inversionSprite!.strokeColor = UIColor.clear
+            inversionSprite!.alpha = CGFloat(colorRevealProg)
+            sprite.addChild(inversionSprite!)
+            
+            if(type == 3 || type == 8) {
+                if(inversionSprite2 != nil) {
+                    inversionSprite2!.removeFromParent()
+                }
+                
+                inversionSprite2 = SKShapeNode.init(path: getTrianglePath(corner: CGPoint(x: 0, y: 0), rotation: -90.0 * Double(Board.direction - direction), size: Board.blockSize))
+                inversionSprite2!.fillColor = color2
+                inversionSprite2!.strokeColor = UIColor.clear
+                inversionSprite2!.alpha = CGFloat(colorRevealProg)
+                inversionSprite2!.zPosition = 0.5
+                sprite2!.alpha = 1.0
+                sprite2!.fillColor = color
+                sprite2!.addChild(inversionSprite2!)
+            }
+            
         } else if(GameState.state == "gaining ability") {
             
             if(type == 4) {
@@ -655,6 +684,36 @@ class Block: Entity {
                 }
             } else if(type == 9) {
                 updateGainAbilityAnimation()
+            }
+            
+            if(type != 9) {
+                let gainAbilityProg = 1 - (GameState.gainAbilityTimer / GameState.gainAbilityTimerMax)
+                let colorRevealProg = max(0, min(1, (gainAbilityProg - GameState.GAcolorRevealTimerMin) / (GameState.GAcolorRevealTimerMax - GameState.GAcolorRevealTimerMin)))
+                
+                if(inversionSprite != nil) {
+                    inversionSprite!.removeFromParent()
+                }
+                
+                inversionSprite = SKShapeNode.init(rect: CGRect.init(x: 0, y: 0, width: Board.blockSize, height: Board.blockSize))
+                inversionSprite!.fillColor = color
+                inversionSprite!.strokeColor = UIColor.clear
+                inversionSprite!.alpha = CGFloat(colorRevealProg)
+                sprite.addChild(inversionSprite!)
+                
+                if(type == 3 || type == 8) {
+                    if(inversionSprite2 != nil) {
+                        inversionSprite2!.removeFromParent()
+                    }
+                    
+                    inversionSprite2 = SKShapeNode.init(path: getTrianglePath(corner: CGPoint(x: 0, y: 0), rotation: -90.0 * Double(Board.direction - direction), size: Board.blockSize))
+                    inversionSprite2!.fillColor = color2
+                    inversionSprite2!.strokeColor = UIColor.clear
+                    inversionSprite2!.alpha = CGFloat(colorRevealProg)
+                    inversionSprite2!.zPosition = 0.5
+                    sprite2!.alpha = 1.0
+                    sprite2!.fillColor = color
+                    sprite2!.addChild(inversionSprite2!)
+                }
             }
             
         } else {
@@ -891,7 +950,7 @@ class Block: Entity {
                 s.alpha = 0.0
                 s.fillColor = UIColor.white
                 s.strokeColor = UIColor.clear
-                s.zPosition = 7
+                s.zPosition = 9
                 s.name = "rotate"
                 
                 sprite.addChild(s)
@@ -909,7 +968,7 @@ class Block: Entity {
                 s.position = CGPoint.init(x: center.x - sprite.position.x, y: center.y - sprite.position.y)
                 s.fillColor = UIColor.black
                 s.strokeColor = UIColor.clear
-                s.zPosition = 6
+                s.zPosition = 7
                 s.name = "rotate"
                 
                 sprite.addChild(s)
@@ -944,7 +1003,7 @@ class Block: Entity {
                 
                 
                 s = SKShapeNode.init(rect: CGRect.init(x: -GameState.screenWidth/2, y: -GameState.screenHeight/2, width: GameState.screenWidth, height: GameState.screenHeight))
-                s.position = CGPoint.init(x: center.x - sprite.position.x, y: CGFloat(0.5 * Board.blockSize))
+                s.position = CGPoint.init(x: center.x - sprite.position.x, y: CGFloat((sqrt(3.0) / 6.0) * Board.blockSize))
                 s.fillColor = UIColor.white
                 s.strokeColor = UIColor.clear
                 s.alpha = 0.0

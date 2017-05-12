@@ -350,8 +350,8 @@ extension Player {
                                 horizontalMovementTimer = 0
                                 updateSprite()
                                 
-                                GameState.gameAction(type: "reveal colors")
-                                //GameState.gameAction(type: "invert")
+                                //GameState.gameAction(type: "reveal colors")
+                                GameState.gameAction(type: "invert")
                             } else if(b.type == 9 && (x != b.x || y != b.y) && !b.gainedAbility) {
                                 nextX = entity.nextX
                                 x = nextX

@@ -72,6 +72,7 @@ class GameState {
     
     static var colorRevealTimer = 0.0
     static let colorRevealTimerMax = 2.0
+    static var coloredBlocksUnlocked = true
     static var coloredBlocksVisible = true
     
     static var gainAbilityTimer = 0.0
@@ -92,6 +93,8 @@ class GameState {
     static let GAexplosionTimerMax = 0.97
     static let GAscreenRotateTimerMin = 0.067
     static let GAscreenRotateTimerMax = 0.672
+    static let GAcolorRevealTimerMin = 0.85
+    static let GAcolorRevealTimerMax = 0.98
     /*
     static private let GAshiftFactor = 0.84
     static let GArotateTimerMin = 0.0 * GAshiftFactor
@@ -212,6 +215,7 @@ class GameState {
             
             if(stageTransitionTimer <= 0) {
                 inverted = false
+                //coloredBlocksVisible = false
                 stageTransitionTimer = 0
                 
                 if(!enteringStage) {
@@ -388,6 +392,8 @@ class GameState {
             if(gainAbilityTimer <= 0) {
                 gainAbilityTimer = 0
                 actionLastFrame()
+                print(coloredBlocksVisible)
+                print(coloredBlocksUnlocked)
             }
             
             EntityManager.updateEntities(delta: currentDelta)
@@ -623,6 +629,8 @@ class GameState {
             }
             EntityManager.reloadAllEntities()
         } else if(state == "gaining ability") {
+            coloredBlocksUnlocked = true
+            coloredBlocksVisible = true
             state = "in game"
             playerState = "free"
             

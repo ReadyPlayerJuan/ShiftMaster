@@ -85,10 +85,12 @@ class EditorScene: SKScene {
         
         Camera.drawNode = drawNode
         
-        Player.currentAbilities = [String]()
-        for _ in 0...Player.allAbilities.count-1 {
-            Player.currentAbilities.append(Player.allAbilities[Player.maxAbilities])
-            Player.maxAbilities += 1
+        if(Player.maxAbilities == 0) {
+            Player.currentAbilities = [String]()
+            for _ in 0...Player.allAbilities.count-1 {
+                Player.currentAbilities.append(Player.allAbilities[Player.maxAbilities])
+                Player.maxAbilities += 1
+            }
         }
         
         if(Memory.getStageEdit() == "no stage") {
