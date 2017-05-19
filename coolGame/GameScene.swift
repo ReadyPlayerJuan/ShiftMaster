@@ -58,11 +58,12 @@ class GameScene: SKScene {
         
         Camera.drawNode = drawNode
         
-        Player.currentAbilities = [String]()
+        /*Player.currentAbilities = [String]()
+        Player.maxAbilities = 0
         for _ in 0...Player.allAbilities.count-1 {
             Player.currentAbilities.append(Player.allAbilities[Player.maxAbilities])
             Player.maxAbilities += 1
-        }
+        }*/
         
         GameState.beginGame()
         GameState.ignoreDelta = true

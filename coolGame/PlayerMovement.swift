@@ -318,7 +318,7 @@ extension Player {
                     if(entity.name == "block" && ((entity as! Block).type == 3 || (entity as! Block).type == 4 || (entity as! Block).type == 7 || (entity as! Block).type == 8 || (entity as! Block).type == 9) && Board.direction == (entity as! Block).direction) {
                         let b = entity as! Block
                         if(nextY == Double(Int(nextY)) && ((x - colAcc <= entity.x && nextX + colAcc >= entity.x) || (x + colAcc >= entity.x && nextX - colAcc <= entity.x)) && ((y <= entity.y && nextY >= entity.y) || (y >= entity.y && nextY <= entity.y)) && (Entity.collides(this: self, with: Board.blocks[Int(y+1)][Int(nextX+0.5)]!) || (Board.findMovingBlockAtPoint(x: Double(Int(nextX+0.5)), y: Double(Int(y+1))) != nil && Entity.collides(this: self, with: Board.findMovingBlockAtPoint(x: Double(Int(nextX+0.5)), y: Double(Int(y+1)))!))   )) {
-                            if(b.type == 3 && b.colorIndex2 != colorIndex && !GameState.inverted) {
+                            if(b.type == 3 && b.colorIndex2 != colorIndex && !GameState.inverted && Player.currentAbilities.contains("changing color") && GameState.coloredBlocksVisible) {
                                 nextX = entity.nextX
                                 xVel = 0
                                 horizontalMovementTimer = 0
@@ -326,7 +326,7 @@ extension Player {
                                 newColorIndex = b.colorIndex2
                                 newColor = b.sprite2!.fillColor
                                 GameState.gameAction(type: "change color")
-                            } else if(b.type == 8 && b.colorIndex2 != colorIndex && GameState.inverted) {
+                            } else if(b.type == 8 && b.colorIndex2 != colorIndex && GameState.inverted && Player.currentAbilities.contains("changing color") && GameState.coloredBlocksVisible) {
                                 nextX = entity.nextX
                                 xVel = 0
                                 horizontalMovementTimer = 0
@@ -343,14 +343,13 @@ extension Player {
                                 newColor = b.sprite.fillColor
                                 GameState.exitTarget = b.exitTarget!
                                 GameState.gameAction(type: "end stage")
-                            } else if(b.type == 7 && (x != b.x || y != b.y)) {
+                            } else if(b.type == 7 && (x != b.x || y != b.y) && Player.currentAbilities.contains("inverting")) {
                                 nextX = entity.nextX
                                 x = nextX
                                 xVel = 0
                                 horizontalMovementTimer = 0
                                 updateSprite()
                                 
-                                //GameState.gameAction(type: "reveal colors")
                                 GameState.gameAction(type: "invert")
                             } else if(b.type == 9 && (x != b.x || y != b.y) && !b.gainedAbility) {
                                 nextX = entity.nextX

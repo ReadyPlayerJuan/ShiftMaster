@@ -39,6 +39,8 @@ class Block: Entity {
     
     
     //for ability gain animation
+    static var abilityGainAnimationNum = 0
+    
     var lightingInfo = [[Double]]()
     var lightSpawnCounter = 0.0
     var numLights = 0
@@ -518,18 +520,7 @@ class Block: Entity {
                 }
             }
         } else if(GameState.state == "revealing colors") {
-            /*if(type == 7) {
-                //sprite2!.alpha = 0.0
-            } else if(type == 6) {
-                updateColor()
-                
-                /*if(GameState.inverted) {
-                    let c = color
-                    color = inverseColor
-                    inverseColor = c
-                }*/
-                sprite.fillColor = color
-            } else if(type == 4) {
+            if(type == 4) {
                 let cycle = 1.0
                 var b = GameState.time
                 
@@ -542,97 +533,9 @@ class Block: Entity {
                 b = b - 1
                 b = pow(abs(b), 1.0)
                 
-                var otherColor: UIColor!
-                if(GameState.getColorRevealLinePosition() < x-1) {
-                    sprite2!.alpha = 1
-                    
-                    //if(GameState.inverted) {
-                    //    otherColor = UIColor(red: 0.0, green: 0.0, blue: 0.0, alpha: CGFloat(b))
-                    //} else {
-                        otherColor = UIColor(red: 1.0, green: 1.0, blue: 1.0, alpha: CGFloat(b))
-                    //}
-                } else if(GameState.getColorRevealLinePosition() < x && GameState.getColorRevealLinePosition() >= x-1) {
-                    sprite2!.alpha = 1-CGFloat(GameState.getColorRevealLinePosition()-(x-1))
-                    
-                    //if(GameState.inverted) {
-                      //  otherColor = UIColor(red: 0.0, green: 0.0, blue: 0.0, alpha: CGFloat(b))
-                    //} else {
-                        otherColor = UIColor(red: 1.0, green: 1.0, blue: 1.0, alpha: CGFloat(b))
-                    //}
-                } else if(GameState.getColorRevealLinePosition() <= x+1 && GameState.getColorRevealLinePosition() >= x) {
-                    sprite2!.alpha = 0
-                    
-                    //if(GameState.inverted) {
-                      //  otherColor = UIColor(red: 0.0, green: 0.0, blue: 0.0, alpha: CGFloat(b))
-                    //} else {
-                        otherColor = UIColor(red: 1.0, green: 1.0, blue: 1.0, alpha: CGFloat(b))
-                    //}
-                } else if(GameState.getColorRevealLinePosition() > x+1 && GameState.getColorRevealLinePosition() <= x+2) {
-                    sprite2!.alpha = 0+CGFloat(GameState.getColorRevealLinePosition()-(x+1))
-                    
-                    //if(GameState.inverted) {
-                      //  otherColor = UIColor(red: 1.0, green: 1.0, blue: 1.0, alpha: CGFloat(b))
-                    //} else {
-                        otherColor = UIColor(red: 0.0, green: 0.0, blue: 0.0, alpha: CGFloat(b))
-                    //}
-                } else if(GameState.getColorRevealLinePosition() > x+2) {
-                    sprite2!.alpha = 1
-                    
-                    //if(GameState.inverted) {
-                      //  otherColor = UIColor(red: 1.0, green: 1.0, blue: 1.0, alpha: CGFloat(b))
-                    //} else {
-                        otherColor = UIColor(red: 0.0, green: 0.0, blue: 0.0, alpha: CGFloat(b))
-                    //}
-                }
-                
-                sprite2!.fillColor = otherColor
-            } else if(type == 3/* || type == 8*/) {
-                if(GameState.getColorRevealLinePosition() < x-1) {
-                    
-                    sprite2!.alpha = 0
-                } else if(GameState.getColorRevealLinePosition() < x && GameState.getColorRevealLinePosition() >= x-1) {
-                    
-                    sprite2!.alpha = 0
-                } else if(GameState.getColorRevealLinePosition() <= x+1 && GameState.getColorRevealLinePosition() >= x) {
-                    
-                    sprite2!.alpha = 0
-                } else if(GameState.getColorRevealLinePosition() > x+1 && GameState.getColorRevealLinePosition() <= x+2) {
-                    
-                    sprite2!.alpha = 0+CGFloat(GameState.getColorRevealLinePosition()-(x+1))
-                } else if(GameState.getColorRevealLinePosition() > x+2) {
-                    
-                    sprite2!.alpha = 1
-                }
+                sprite2!.fillColor = UIColor(red: 1.0, green: 1.0, blue: 1.0, alpha: CGFloat(b))
             }
             
-            
-            if(GameState.getColorRevealLinePosition() <= x) {
-                
-            } else if(GameState.getColorRevealLinePosition() < x+1) {
-                if(inversionSprite != nil) {
-                    inversionSprite!.removeFromParent()
-                }
-                
-                inversionSprite = SKShapeNode.init(rect: CGRect.init(x: 0, y: 0, width: Board.blockSize * (GameState.getColorRevealLinePosition()-x), height: Board.blockSize))
-                inversionSprite!.fillColor = color
-                inversionSprite!.strokeColor = UIColor.clear
-                sprite.addChild(inversionSprite!)
-            } else {
-                if(GameState.getPrevColorRevealLinePosition() < x+1) {
-                    if(inversionSprite != nil) {
-                        inversionSprite!.removeFromParent()
-                    }
-                    
-                    inversionSprite = SKShapeNode.init(rect: CGRect.init(x: 0, y: 0, width: Board.blockSize, height: Board.blockSize))
-                    inversionSprite!.fillColor = color
-                    inversionSprite!.strokeColor = UIColor.clear
-                    sprite.addChild(inversionSprite!)
-                } else {
-                    if(inversionSprite != nil) {
-                        inversionSprite!.fillColor = color
-                    }
-                }
-             }*/
             let colorRevealProg = 1 - (GameState.colorRevealTimer / GameState.colorRevealTimerMax)
             
             if(inversionSprite != nil) {
@@ -661,7 +564,6 @@ class Block: Entity {
             }
             
         } else if(GameState.state == "gaining ability") {
-            
             if(type == 4) {
                 updateColor()
                 
@@ -686,36 +588,37 @@ class Block: Entity {
                 updateGainAbilityAnimation()
             }
             
-            if(type != 9) {
-                let gainAbilityProg = 1 - (GameState.gainAbilityTimer / GameState.gainAbilityTimerMax)
-                let colorRevealProg = max(0, min(1, (gainAbilityProg - GameState.GAcolorRevealTimerMin) / (GameState.GAcolorRevealTimerMax - GameState.GAcolorRevealTimerMin)))
-                
-                if(inversionSprite != nil) {
-                    inversionSprite!.removeFromParent()
-                }
-                
-                inversionSprite = SKShapeNode.init(rect: CGRect.init(x: 0, y: 0, width: Board.blockSize, height: Board.blockSize))
-                inversionSprite!.fillColor = color
-                inversionSprite!.strokeColor = UIColor.clear
-                inversionSprite!.alpha = CGFloat(colorRevealProg)
-                sprite.addChild(inversionSprite!)
-                
-                if(type == 3 || type == 8) {
-                    if(inversionSprite2 != nil) {
-                        inversionSprite2!.removeFromParent()
+            if(Block.abilityGainAnimationNum == 1) {
+                if(type != 9) {
+                    let gainAbilityProg = 1 - (GameState.gainAbilityTimer / GameState.gainAbilityTimerMax)
+                    let colorRevealProg = max(0, min(1, (gainAbilityProg - GameState.GAcolorRevealTimerMin) / (GameState.GAcolorRevealTimerMax - GameState.GAcolorRevealTimerMin)))
+                    
+                    if(inversionSprite != nil) {
+                        inversionSprite!.removeFromParent()
                     }
                     
-                    inversionSprite2 = SKShapeNode.init(path: getTrianglePath(corner: CGPoint(x: 0, y: 0), rotation: -90.0 * Double(Board.direction - direction), size: Board.blockSize))
-                    inversionSprite2!.fillColor = color2
-                    inversionSprite2!.strokeColor = UIColor.clear
-                    inversionSprite2!.alpha = CGFloat(colorRevealProg)
-                    inversionSprite2!.zPosition = 0.5
-                    sprite2!.alpha = 1.0
-                    sprite2!.fillColor = color
-                    sprite2!.addChild(inversionSprite2!)
+                    inversionSprite = SKShapeNode.init(rect: CGRect.init(x: 0, y: 0, width: Board.blockSize, height: Board.blockSize))
+                    inversionSprite!.fillColor = color
+                    inversionSprite!.strokeColor = UIColor.clear
+                    inversionSprite!.alpha = CGFloat(colorRevealProg)
+                    sprite.addChild(inversionSprite!)
+                    
+                    if(type == 3 || type == 8) {
+                        if(inversionSprite2 != nil) {
+                            inversionSprite2!.removeFromParent()
+                        }
+                        
+                        inversionSprite2 = SKShapeNode.init(path: getTrianglePath(corner: CGPoint(x: 0, y: 0), rotation: -90.0 * Double(Board.direction - direction), size: Board.blockSize))
+                        inversionSprite2!.fillColor = color2
+                        inversionSprite2!.strokeColor = UIColor.clear
+                        inversionSprite2!.alpha = CGFloat(colorRevealProg)
+                        inversionSprite2!.zPosition = 0.5
+                        sprite2!.alpha = 1.0
+                        sprite2!.fillColor = color
+                        sprite2!.addChild(inversionSprite2!)
+                    }
                 }
             }
-            
         } else {
             
             if(type == 4) {

@@ -72,11 +72,11 @@ class GameState {
     
     static var colorRevealTimer = 0.0
     static let colorRevealTimerMax = 2.0
-    static var coloredBlocksUnlocked = true
-    static var coloredBlocksVisible = true
+    static var coloredBlocksUnlocked = false
+    static var coloredBlocksVisible = false
     
     static var gainAbilityTimer = 0.0
-    static let gainAbilityTimerMax = 15.0
+    static let gainAbilityTimerMax = 35.0//15.0
     
     //static private let GAshiftFactor = 0.84
     static let GArotateTimerMin = 0.0
@@ -95,22 +95,23 @@ class GameState {
     static let GAscreenRotateTimerMax = 0.672
     static let GAcolorRevealTimerMin = 0.85
     static let GAcolorRevealTimerMax = 0.98
-    /*
-    static private let GAshiftFactor = 0.84
-    static let GArotateTimerMin = 0.0 * GAshiftFactor
-    static let GArotateTimerMax = 0.8 * GAshiftFactor
-    static let GAshadeChangeTimerMin = 0.65 * GAshiftFactor
-    static let GAshadeChangeTimerMax = 0.80 * GAshiftFactor
-    static let GAscreenFloodTimerMin = 0.80 * GAshiftFactor
-    static let GAscreenFloodTimerMax = 0.86 * GAshiftFactor
-    static let GAscreenFloodTimerMin2 = 0.91 * GAshiftFactor
-    static let GAscreenFloodTimerMax2 = 0.95 * GAshiftFactor
-    static let GAspinningLightTimerMin = 0.0 * GAshiftFactor
-    static let GAspinningLightTimerMax = GAscreenFloodTimerMax
-    static let GAexplosionTimerMin = 0.95 * GAshiftFactor
-    static let GAexplosionTimerMax = 0.97
-    static let GAscreenRotateTimerMin = 0.08 * GAshiftFactor
-    static let GAscreenRotateTimerMax = 0.8 * GAshiftFactor*/
+    
+     /*static let GArotateTimerMin = 0.0
+     static let GArotateTimerMax = 0.2
+     static let GAshadeChangeTimerMin = 0.0
+     static let GAshadeChangeTimerMax = 0.2
+     static let GAscreenFloodTimerMin = 0.672
+     static let GAscreenFloodTimerMax = 0.722
+     static let GAscreenFloodTimerMin2 = 0.764
+     static let GAscreenFloodTimerMax2 = 0.798
+     static let GAspinningLightTimerMin = 0.0
+     static let GAspinningLightTimerMax = 0.2
+     static let GAexplosionTimerMin = 0.798
+     static let GAexplosionTimerMax = 0.97
+     static let GAscreenRotateTimerMin = 0.067
+     static let GAscreenRotateTimerMax = 0.672
+     static let GAcolorRevealTimerMin = 0.85
+     static let GAcolorRevealTimerMax = 0.98*/
     
     static let maxMoveSpeed = 3.8
     static let slideLength = 0.1
@@ -226,6 +227,10 @@ class GameState {
                     Board.nextStage()
                     initEntities()
                     
+                    if(Board.currentStage!.playShowColorAnimation) {
+                        coloredBlocksVisible = false
+                    }
+                    
                     
                     Camera.centerOnStageTransitionVector()
                     
@@ -242,8 +247,12 @@ class GameState {
                         Camera.centerOnPlayer()
                         EntityManager.checkForCollision()
                         infoScreenNum = 0
+                        
+                        if(coloredBlocksUnlocked && Board.currentStage!.playShowColorAnimation) {
+                            gameAction(type: "reveal colors")
+                        }
                         if((Board.currentStage?.infoScreens.count)! > 0) {
-                            GameState.gameAction(type: "info")
+                            gameAction(type: "info")
                         }
                     }
                 }
@@ -392,8 +401,6 @@ class GameState {
             if(gainAbilityTimer <= 0) {
                 gainAbilityTimer = 0
                 actionLastFrame()
-                print(coloredBlocksVisible)
-                print(coloredBlocksUnlocked)
             }
             
             EntityManager.updateEntities(delta: currentDelta)
@@ -452,6 +459,7 @@ class GameState {
         } else if(type == "gain ability") {
             playerState = "paused"
             state = "gaining ability"
+            Block.abilityGainAnimationNum = Player.maxAbilities
         }
         
         if(state == "rotating" && playerState != "changing color") {
@@ -629,8 +637,10 @@ class GameState {
             }
             EntityManager.reloadAllEntities()
         } else if(state == "gaining ability") {
-            coloredBlocksUnlocked = true
-            coloredBlocksVisible = true
+            if(Block.abilityGainAnimationNum == 1) {
+                coloredBlocksUnlocked = true
+                coloredBlocksVisible = true
+            }
             state = "in game"
             playerState = "free"
             
@@ -797,7 +807,7 @@ class GameState {
     }
     
     class func getGainAbilityRotation() -> Double {
-        if(Player.maxAbilities != 0) {
+        if(Block.abilityGainAnimationNum != 0) {
             return 0
         }
         

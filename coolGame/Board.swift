@@ -51,7 +51,7 @@ class Board {
                 //let ID = Memory.getCurrentStageID()
                 let ID = -1 + Int(rand() * 0)
                 if(ID == -1) {
-                    currentStage = hubStage.children[0]
+                    currentStage = hubStage
                 } else {
                     if(hubStage.findStageWithID(ID, baseID: hubStage.ID) != nil) {
                         currentStage = hubStage.findStageWithID(ID, baseID: hubStage.ID)
@@ -278,7 +278,7 @@ class Board {
     
     private class func loadAllStages() {
         let stage =   [ [1, 1, 1, 1, 1, 1, 1],
-                        [1, 0, 0, 0, 0, 0, 1],
+                        [1, 3, 0, 0, 0, 0, 1],
                         [1, 0, 0, 0, 0, 0, 1],
                         [1,-41,0, 0, 0, 0, 1],
                         [1, 0, 0, 0,-11,0, 1],
@@ -288,8 +288,9 @@ class Board {
         let otherEntities: [Entity] = []
         
         hubStage = Stage.init(withBlocks: stage, entities: otherEntities, spawn: spawnPoint, withName: "hub", exits: exitTargets, colorTheme: 1)
+        hubStage.playShowColorAnimation = true
         StageSet1.loadStages(base: hubStage)
-        StageSet3.loadStages(base: hubStage)
+        //StageSet3.loadStages(base: hubStage)
     }
     
     private class func rand() -> Double {

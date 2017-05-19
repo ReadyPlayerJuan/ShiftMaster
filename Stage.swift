@@ -22,6 +22,7 @@ class Stage {
     var spawnPoint: CGPoint!
     var colorTheme = 0
     var stageTransitionType = 0
+    var playShowColorAnimation = false
     
     var infoScreens = [Int]()
     

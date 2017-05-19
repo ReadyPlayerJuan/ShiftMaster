@@ -53,7 +53,11 @@ extension Block {
                     let maxAngleDifference = (120.0 / Double(numShadows + 1)) * (3.14159 / 180.0)
                     let finalShadowAlpha0 = 0.5
                     let finalShadowAlpha1 = 0.1
-                    let colorShade = max(0, min(1, (rotateProg * 1.5) - 0.2))
+                    
+                    var colorShade = 0.0
+                    if(Block.abilityGainAnimationNum == 1) {
+                        colorShade = max(0, min(1, (rotateProg * 1.5) - 0.2))
+                    }
                     
                     for j in 0...numShadows-1 {
                         let angleDifference = maxAngleDifference * Double((numShadows-1-j) + 1) * pow(rotateProg, 1)
@@ -409,7 +413,11 @@ extension Block {
                             let angle = (lightingInfo[j][0] * (1 - lightMovementProg)) + (lightMovementProg * lightingInfo[j][2])
                             let lightAngleRange = ((lightMovementProg * 0.7) + 0.3) * maxAngleRange
                             let angleRange = min(1, (prog - lightingInfo[j][3]) / timeToMaxRange) * lightAngleRange
-                            let coloredAmount = 0.35
+                            
+                            var coloredAmount = 0.0
+                            if(Block.abilityGainAnimationNum == 1) {
+                                coloredAmount = 0.35
+                            }
                             let color = [lightingInfo[j][3], lightingInfo[j][4], lightingInfo[j][5]];
                             
                             if(angleRange > 0) {

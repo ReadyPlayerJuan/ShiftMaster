@@ -13,19 +13,19 @@ class StageSet1 {
     class func loadStages(base: Stage) {
         let s0 = getStage(index: 0)
         let s1 = getStage(index: 1)
-        let s2 = getStage(index: 2)
+        /*let s2 = getStage(index: 2)
         let s3 = getStage(index: 3)
         let s4 = getStage(index: 4)
         let s5 = getStage(index: 5)
-        let s6 = getStage(index: 6)
+        let s6 = getStage(index: 6)*/
         
         base.addChild(child: s0)
         s0.addChild(child: s1)
-        s1.addChild(child: s2)
+        /*s1.addChild(child: s2)
         s2.addChild(child: s3)
         s3.addChild(child: s4)
         s4.addChild(child: s5)
-        s5.addChild(child: s6)
+        s5.addChild(child: s6)*/
     }
     
     class func getStage(index: Int) -> Stage {
