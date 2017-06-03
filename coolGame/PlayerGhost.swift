@@ -8,7 +8,7 @@
 
 import Foundation
 import SpriteKit
-
+/*
 class PlayerGhost: Entity {
     var direction = 0
     var startDirection = 0
@@ -382,4 +382,4 @@ class PlayerGhost: Entity {
             sprite.zRotation = CGFloat((Double(direction) * (3.14159 / 2)) + ((rotation + 120.0) * (3.14159 / 180.0)))
         }
     }
-}
+}*/

@@ -9,6 +9,7 @@
 import Foundation
 import SpriteKit
 
+/*
 class EditorManager {
     static var drawNode: SKShapeNode!
     static var editorScene: EditorScene!
@@ -62,7 +63,7 @@ class EditorManager {
     static var camera = CGPoint(x: 0, y: 0)
     
     class func update(delta: TimeInterval) {
-        if(!GameState.currentlyEditing) {
+        /*if(!GameState.currentlyEditing) {
             exitStageButton.sprite[0].position = CGPoint(x: 0, y: 0)
             exitStageButton.update(active: true, delta: delta)
             if(exitStageButton.action && GameState.state == "in game" && GameState.playerState == "free") {
@@ -567,20 +568,20 @@ class EditorManager {
             }
             
             GameState.drawNode.position = CGPoint(x: -((camera.x + 0.5) * CGFloat(Board.blockSize)), y: ((camera.y - 0.5) * CGFloat(Board.blockSize)))
-        }
+        }*/
     }
     
     class func getSelectableEntities() -> [Entity] {
-        var temp = [Entity]()
+        /*var temp = [Entity]()
         for e in Board.otherEntities {
             temp.append(e)
         }
         temp.append(EntityManager.getPlayer()!)
-        return temp
+        return temp*/
     }
     
     class func drawBlock(x: Int, y: Int, addBlock: Bool) {
-        var addedBlock = addBlock
+        /*var addedBlock = addBlock
         if(layerNum == 0) {
             if(iconType == 0) {
                 if(drawColor == -4) {
@@ -674,11 +675,11 @@ class EditorManager {
         
         if(addedBlock) {
             completeRedraw()
-        }
+        }*/
     }
     
     class func completeRedraw() {
-        let p = EntityManager.getPlayer()!
+        /*let p = EntityManager.getPlayer()!
         p.loadSprite()
         EntityManager.entities = []
         EntityManager.addEntity(entity: p)
@@ -708,11 +709,11 @@ class EditorManager {
             }
         }
         EntityManager.sortEntities()
-        EntityManager.redrawEntities(node: GameState.drawNode, name: "all")
+        EntityManager.redrawEntities(node: GameState.drawNode, name: "all")*/
     }
     
     class func initElements() {
-        drawNode.removeAllChildren()
+        /*drawNode.removeAllChildren()
         
         blockLayer = SKShapeNode.init(rect: CGRect.init(x: 0, y: 0, width: 1, height: 1))
         blockLayer.fillColor = UIColor.clear
@@ -845,11 +846,11 @@ class EditorManager {
         }
         for s in quit.sprite {
             menu.addChild(s)
-        }
+        }*/
     }
     
     class func loadCurrentIcon() {
-        currentBlockIcon.removeFromParent()
+        /*currentBlockIcon.removeFromParent()
         
         if(layerNum == 0) {
             switch(iconType) {
@@ -942,7 +943,7 @@ class EditorManager {
             }
         }
         
-        drawNode.addChild(currentBlockIcon)
+        drawNode.addChild(currentBlockIcon)*/
     }
     
     class func loadColor(colorIndex: Int) -> UIColor {
@@ -960,7 +961,7 @@ class EditorManager {
             return UIColor.clear
         }
     }
-    
+    /*
     class func addLeftRow() {
         for i in 0...(Board.blocks.count - 1) {
             Board.blocks[i].insert(Block.init(blockType: 5, color: -1, secondaryColor: -1, dir: -1, x: 0, y: Double(i)), at: 0)
@@ -1115,10 +1116,10 @@ class EditorManager {
         addBottomRow()
         */
         completeRedraw()
-    }
+    }*/
     
     class func encodeStageEdit() -> String {
-        trim()
+        /*trim()
         
         var code = ""
         var exits = [[Int]]()
@@ -1222,5 +1223,5 @@ class EditorManager {
         code += "defaultName"
         
         return code
-    }
-}
+    }*/
+}*/

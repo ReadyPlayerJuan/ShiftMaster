@@ -12,10 +12,10 @@ import GameplayKit
 
 class EditorScene: SKScene {
     
-    var drawNode: SKShapeNode!
-    var rotateNode: SKShapeNode!
-    var superNode: SKShapeNode!
-    var editorNode: SKShapeNode!
+    var drawNode: SKNode!
+    var rotateNode: SKNode!
+    var superNode: SKNode!
+    var editorNode: SKNode!
     
     static let screenHeight = UIScreen.main.fixedCoordinateSpace.bounds.width
     static let screenWidth = UIScreen.main.fixedCoordinateSpace.bounds.height
@@ -53,20 +53,12 @@ class EditorScene: SKScene {
          GameState.rotateLayer = rotateLayer*/
         
         GameState.editorscene = self
-        EditorManager.editorScene = self
+        //EditorManager.editorScene = self
         
-        superNode = SKShapeNode.init(rect: CGRect(x: 0, y: 0, width: 1, height: 1))
-        superNode.strokeColor = UIColor.clear
-        superNode.fillColor = UIColor.clear
-        drawNode = SKShapeNode.init(rect: CGRect(x: 0, y: 0, width: 1, height: 1))
-        drawNode.strokeColor = UIColor.clear
-        drawNode.fillColor = UIColor.clear
-        rotateNode = SKShapeNode.init(rect: CGRect(x: 0, y: 0, width: 1, height: 1))
-        rotateNode.strokeColor = UIColor.clear
-        rotateNode.fillColor = UIColor.clear
-        editorNode = SKShapeNode.init(rect: CGRect(x: 0, y: 0, width: 1, height: 1))
-        editorNode.strokeColor = UIColor.clear
-        editorNode.fillColor = UIColor.clear
+        superNode = SKNode.init()
+        drawNode = SKNode.init()
+        rotateNode = SKNode.init()
+        editorNode = SKNode.init()
         
         removeAllChildren()
         addChild(superNode)
@@ -74,7 +66,7 @@ class EditorScene: SKScene {
         superNode.addChild(editorNode)
         rotateNode.addChild(drawNode)
         
-        EditorManager.drawNode = editorNode
+        //EditorManager.drawNode = editorNode
         
         GameState.drawNode = drawNode
         GameState.rotateNode = rotateNode
@@ -98,7 +90,7 @@ class EditorScene: SKScene {
         }
         
         GameState.ignoreDelta = true
-        GameState.gameAction(type: "begin editor")
+        //GameState.gameAction(type: "begin editor")
     }
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {

@@ -10,7 +10,7 @@ import Foundation
 import SpriteKit
 
 class Camera {
-    static var drawNode: SKShapeNode!
+    static var drawNode: SKNode!
     
     static var shakeTimer = 0.0
     static var shakeTimerMax = 0.1
@@ -20,7 +20,7 @@ class Camera {
     static var shakeDropoff = true
     static let maxShakeDistance = 0.07
     
-    static var cameraLockonSpeed = 60.0
+    static var cameraLockonSpeed = 9990.0
     static var cameraZoomSpeed = 10.0
     
     static var currentX = -9999.0
@@ -80,18 +80,18 @@ class Camera {
     }
     
     class func centerOnEditorCamera() {
-        targetX = -Double((EditorManager.camera.x + 0.5) * CGFloat(Board.blockSize))
-        targetY = Double((EditorManager.camera.y - 0.5) * CGFloat(Board.blockSize))
+        //targetX = -Double((EditorManager.camera.x + 0.5) * CGFloat(Board.blockSize))
+        //targetY = Double((EditorManager.camera.y - 0.5) * CGFloat(Board.blockSize))
     }
     
     class func centerOnDeathVector() {
-        targetX = -((Double((EntityManager.getPlayer() as! Player).getCenter().x) + Double(GameState.getDeathVector().dx) + 0.0) * Double(Board.blockSize))
-        targetY = ((Double((EntityManager.getPlayer() as! Player).getCenter().y) + Double(GameState.getDeathVector().dy) - 0.0) * Double(Board.blockSize))
+        //targetX = -((Double((EntityManager.getPlayer() as! Player).getCenter().x) + Double(GameState.getDeathVector().dx) + 0.0) * Double(Board.blockSize))
+        //targetY = ((Double((EntityManager.getPlayer() as! Player).getCenter().y) + Double(GameState.getDeathVector().dy) - 0.0) * Double(Board.blockSize))
     }
     
     class func centerOnStageTransitionVector() {
-        targetX = -(Double((EntityManager.getPlayer() as! Player).getCenter().x) * Double(Board.blockSize)) + Double(GameState.getStageTransitionVector().dx)
-        targetY = (Double((EntityManager.getPlayer() as! Player).getCenter().y) * Double(Board.blockSize)) + Double(GameState.getStageTransitionVector().dy)
+        //targetX = -(Double((EntityManager.getPlayer() as! Player).getCenter().x) * Double(Board.blockSize)) + Double(GameState.getStageTransitionVector().dx)
+        //targetY = (Double((EntityManager.getPlayer() as! Player).getCenter().y) * Double(Board.blockSize)) + Double(GameState.getStageTransitionVector().dy)
     }
     
     private class func rand() -> Double {

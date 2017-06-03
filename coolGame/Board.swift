@@ -13,15 +13,17 @@ class Board {
     static var hubStage: Stage!
     static var currentStage: Stage?
     
-    static var blocks: [[Block?]]!
-    static var otherEntities: [Entity] = []
+    static var entities: [Entity] = []
+    static var boardWidth: Int!
+    static var boardHeight: Int!
     
     static let defaultBlockSize: Double = Double(Int(GameState.screenHeight / 5.3))
     static var blockSize: Double = defaultBlockSize
     static var spawnPoint: CGPoint!
     static var colorTheme = 0
     static var direction = 0
-    static let colorVariation = 30.0
+    static let colorVariation = 25.0
+    static let grayVariation = 40.0
     
     static var stageID = -1
     
@@ -77,29 +79,40 @@ class Board {
         direction = 0
         let temp: [[Int]]! = currentStage?.blocks
         spawnPoint = currentStage?.spawnPoint
-        otherEntities = (currentStage?.getEntities())!
-        //Player.reset()
         
-        blocks = newEmptyArray(width: temp[0].count, height: temp.count)
+        entities = []
+        boardWidth = temp[0].count
+        boardHeight = temp.count
         
-        for row in 0 ... blocks.count-1 {
-            for col in 0 ... blocks[0].count-1 {
+        //blocks = newEmptyArray(width: temp[0].count, height: temp.count)
+        
+        for row in 0 ... temp.count-1 {
+            for col in 0 ... temp[0].count-1 {
                 if(temp[row][col] == -9) {
-                    blocks[row][col] = Block.init(blockType: 5, color: -1, secondaryColor: -1, dir: -1, x: Double(col), y: Double(row))
-                } else if(temp[row][col] == 1 || temp[row][col] == 0) {
-                    blocks[row][col] = Block.init(blockType: temp[row][col], color: -1, secondaryColor: -1, dir: -1, x: Double(col), y: Double(row))
+                    //entities.append(NonsolidBlock.init(x: col, y: row))
+                    //blocks[row][col] = Block.init(blockType: 5, color: -1, secondaryColor: -1, dir: -1, x: Double(col), y: Double(row))
+                } else if(temp[row][col] == 1) {
+                    entities.append(SolidBlock.init(x: col, y: row))
+                } else if(temp[row][col] == 0) {
+                    entities.append(NonsolidBlock.init(x: col, y: row))
+                    //blocks[row][col] = Block.init(blockType: temp[row][col], color: -1, secondaryColor: -1, dir: -1, x: Double(col), y: Double(row))
                 } else if(temp[row][col] < 10 && temp[row][col] > 1) {
-                    blocks[row][col] = Block.init(blockType: 2, color: temp[row][col]-2, secondaryColor: -1, dir: -1, x: Double(col), y: Double(row))
+                    entities.append(ColoredBlock.init(x: col, y: row, colorIndex: temp[row][col]-2))
+                    //blocks[row][col] = Block.init(blockType: 2, color: temp[row][col]-2, secondaryColor: -1, dir: -1, x: Double(col), y: Double(row))
                 } else if(temp[row][col] == 99) {
-                    blocks[row][col] = Block.init(blockType: 6, color: -1, secondaryColor: -1, dir: -1, x: Double(col), y: Double(row))
+                    entities.append(SolidBlock.init(x: col, y: row))
+                    //blocks[row][col] = Block.init(blockType: 6, color: -1, secondaryColor: -1, dir: -1, x: Double(col), y: Double(row))
                 } else if(temp[row][col] >= 10) {
+                    entities.append(NonsolidBlock.init(x: col, y: row))
+                    
                     let s = temp[row][col]
-                    let direction = Int(Double(s)/100.0)
+                    let direction = Int(Double(s)/100.0) % 4
                     var colorIndex = Int(Double(s-(100*direction))/10.0)
                     var colorIndex2 = s - (100*direction) - (colorIndex*10)
                     colorIndex -= 2
                     colorIndex2 -= 2
-                    if(colorIndex2 == 7) {
+                    entities.append(ColorChangeBlock.init(x: col, y: row, colorIndex: colorIndex2, direction: direction))
+                    /*if(colorIndex2 == 7) {
                         blocks[row][col] = Block.init(blockType: 7, color: colorIndex, secondaryColor: -1, dir: direction, x: Double(col), y: Double(row))
                     } else {
                         if(direction >= 4) {
@@ -107,11 +120,13 @@ class Board {
                         } else {
                             blocks[row][col] = Block.init(blockType: 3, color: colorIndex, secondaryColor: colorIndex2, dir: direction, x: Double(col), y: Double(row))
                         }
-                    }
+                    }*/
                 } else if(temp[row][col] < 0) {
+                    entities.append(NonsolidBlock.init(x: col, y: row))
                     let direction = (abs(temp[row][col])/10)-1
+                    entities.append(ExitBlock.init(x: col, y: row, direction: direction))
                     
-                    if(direction >= 4) {
+                    /*if(direction >= 4) {
                         blocks[row][col] = Block.init(blockType: 9, color: (abs(temp[row][col])%10), secondaryColor: -1, dir: direction%4, x: Double(col), y: Double(row))
                     } else {
                         blocks[row][col] = Block.init(blockType: 4, color: (abs(temp[row][col])%10)-2, secondaryColor: -1, dir: direction, x: Double(col), y: Double(row))
@@ -120,7 +135,7 @@ class Board {
                                 blocks[row][col]?.exitTarget = coords[2]
                             }
                         }
-                    }
+                    }*/
                 }
             }
         }
@@ -129,13 +144,35 @@ class Board {
     class func reset() {
         currentStage = nil
         direction = 0
-        blocks = [[Block]]()
-        otherEntities = [Entity]()
+        entities = []
         colorTheme = 0
         blockSize = defaultBlockSize
     }
     
+    class func rotateLeft() {
+        let temp = boardWidth
+        boardWidth = boardHeight
+        boardHeight = temp
+        
+        direction -= 1
+        if(direction < 0) {
+            direction += 4
+        }
+    }
+    
+    class func rotateRight() {
+        let temp = boardWidth
+        boardWidth = boardHeight
+        boardHeight = temp
+        
+        direction += 1
+        if(direction > 3) {
+            direction -= 4
+        }
+    }
+    
     class func rotate() {
+        /*
          if(GameState.rotateDirection == "right") {
             direction += 1
             direction %= 4
@@ -215,9 +252,9 @@ class Board {
             p.prevYVel = -tempVels[0]
             
             blocks = temp
-         }
+         }*/
     }
-    
+    /*
     class func findMovingBlockAtPoint(x: Double, y: Double) -> MovingBlock? {
         for entity in otherEntities {
             if(entity.name == "moving block") {
@@ -228,8 +265,8 @@ class Board {
         }
         
         return nil
-    }
-    
+    }*/
+    /*
     class func rotatePoint(_ point: CGPoint, clockwise: Bool) -> CGPoint {
         if(clockwise) {
             var tempCoords = [Double(point.x), Double(point.y)]
@@ -244,8 +281,8 @@ class Board {
             tempPoint.y = CGFloat(Double(blocks[0].count-1)-tempCoords[0])
             return tempPoint
         }
-    }
-    
+    }*/
+    /*
     class func sortOtherEntities() -> [Entity] {
         var temp = [Entity]()
         
@@ -261,8 +298,8 @@ class Board {
         }
         
         return temp
-    }
-    
+    }*/
+    /*
     private class func newEmptyArray(width: Int, height: Int) -> [[Block?]] {
         var temp = [[Block?]]()
         for row in 0 ... height-1 {
@@ -274,7 +311,7 @@ class Board {
             }
         }
         return temp
-    }
+    }*/
     
     private class func loadAllStages() {
         let stage =   [ [1, 1, 1, 1, 1, 1, 1],

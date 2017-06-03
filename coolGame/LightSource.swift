@@ -8,7 +8,7 @@
 
 import Foundation
 import SpriteKit
-
+/*
 class LightSource: Entity {
     var blockTransparency: [[Bool]] = [[]]
     var stageEdges: [LineSegment] = []
@@ -473,4 +473,4 @@ class LightSource: Entity {
         }
         return temp
     }
-}
+}*/

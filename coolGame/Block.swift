@@ -9,6 +9,7 @@
 import Foundation
 import SpriteKit
 
+/*
 class Block: Entity {
     var colorIndex: Int = -1
     var colorIndex2: Int = -1
@@ -944,4 +945,4 @@ class Block: Entity {
         n = 0.3
         stageBreakawayAngleVel = (rand() * n * 2) - n
     }
-}
+}*/

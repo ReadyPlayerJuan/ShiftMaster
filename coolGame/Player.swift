@@ -24,17 +24,18 @@ class Player: Entity {
     
     let colAcc = 0.0001
     
-    var movingRight = false
     var movingLeft = false
+    var movingRight = false
     var jumping = false
     var canHingeLeft = false
     var canHingeRight = false
     var hitCeiling = false
     
+    var hinging = false
+    var hingeDirection = "left"
+    
     var colorIndex = -1
     var newColorIndex = -1
-    var color: UIColor!
-    var newColor: UIColor?
     
     var respawnEffect: SKShapeNode!
     var deathParticles: [SKShapeNode] = []
@@ -53,10 +54,14 @@ class Player: Entity {
         controllable = true
         isDynamic = true
         name = "player"
+        hitboxType = HitboxType.player
+        
+        defaultSpriteColor = UIColor.white
+        shader = PlayerShader.shader
         
         reset()
         
-        loadSprite()
+        load()
     }
     
     func reset() {
@@ -71,50 +76,84 @@ class Player: Entity {
         
         colorIndex = -1
         collidesWithType = [0, 10, 11, 12, 13, 14, 15]
-        color = loadColor(colIndex: colorIndex)
-        newColor = loadColor(colIndex: newColorIndex)
         
-        if(GameState.time > 0.5 && !GameState.inEditor && !(GameState.state == "stage transition")) {
+        load()
+        /*if(GameState.time > 0.5 && !GameState.inEditor && !(GameState.state == "stage transition")) {
             sprite.removeFromParent()
             loadSprite()
             EntityManager.redrawEntities(node: GameState.drawNode, name: "player")
         } else {
             loadSprite()
+        }*/
+    }
+    
+    override func update(delta: TimeInterval, actions: [GameAction]) {
+        checkInputForMovement()
+        
+        print(x, y)
+        print(sprite.position)
+        if(!GameState.stopPlayerMovement) {
+            if(hinging) {
+                rotate(delta: delta)
+            } else {
+                move(delta: delta)
+            }
+        } else {
+            
+        }
+        
+        if(actions.contains(GameAction.changingColor) || actions.contains(GameAction.endingStage)) {
+            nextX = Double(Int(x + 0.5))
+            x = nextX
         }
     }
     
-    override func update(delta: TimeInterval) {
-        if(GameState.state == "in game") {
-            checkInputForMovement()
+    override func gameActionFirstFrame(_ action: GameAction) {
+        switch(action) {
+        case .rotateLeft:
+            hinging = false
+            sprite.zRotation = 0
+            super.gameActionFirstFrame(action)
+            break
+        case .rotateRight:
+            hinging = false
+            sprite.zRotation = 0
+            super.gameActionFirstFrame(action)
+            break
+        default:
+            break
+        }
+    }
+    
+    override func gameActionLastFrame(_ action: GameAction) {
+        switch(action) {
+        case .rotateLeft:
+            //hinging = false
+            break
+        case .rotateRight:
+            //hinging = false
+            break
+        case .changingColor:
+            colorIndex = newColorIndex
+            newColorIndex = -1
+            defaultSpriteColor = ColorTheme.getColor(colorIndex: colorIndex, colorVariation: false)
             
-            if(GameState.playerState == "free") {
-                move(delta: delta)
-            } else if(GameState.playerState == "rotating") {
-                rotate(delta: delta)
-            } else if(GameState.playerState == "changing color") {
-                
-            }
-        } else if(GameState.state == "rotating") {
-            if(GameState.playerState == "free") {
-                checkInputForMovement()
-                
-                move(delta: delta)
-            } else if(GameState.playerState == "rotating") {
-                rotate(delta: delta)
-            }
-        } else if(GameState.state == "stage transition") {
-            if(GameState.stageTransitionTimer > GameState.stageTransitionTimerMax/2) {
-                //sprite[0].alpha = 0
-            }
-        } else if(GameState.playerState == "respawning") {
-            updateDeathEffect()
-        } else if(GameState.state == "gaining ability") {
+            load()
+            EntityManager.redrawEntities(node: GameState.drawNode, name: "player")
             
+            collidesWithType = [0]
+            collidesWithType.append(colorIndex+10)
+            break
+        case .endingStage:
+            sprite.alpha = 0
+            break
+        default:
+            break
         }
     }
     
     func getCenter() -> CGPoint {
-        if(GameState.playerState == "rotating" || (GameState.state == "rotating" && GameState.rotateTimer == GameState.rotateTimerMax)) {
+        /*if(GameState.playerState == "rotating" || (GameState.state == "rotating" && GameState.rotateTimer == GameState.rotateTimerMax)) {
             if(GameState.hingeDirection == "right") {
                 return CGPoint.init(x: x + 1.0 - ((sqrt(3.0) / 3.0) * cos((rotation - 30) * (3.14159 / 180.0))), y: y + ((sqrt(3.0) / 3.0) * sin((rotation - 30) * (3.14159 / 180.0))))
             } else {
@@ -122,9 +161,26 @@ class Player: Entity {
             }
         } else {
             return CGPoint.init(x: x + 0.5, y: y - (sqrt(3.0) / 6.0))
-        }
+        }*/
+        return CGPoint(x: x, y: y)
     }
     
+    override func updateAttributes() {
+        sprite.setValue(SKAttributeValue(vectorFloat2: vector_float2(Float(x), Float(y))), forAttribute: "a_player_position")
+    }
+    
+    override func load() {
+        if(sprite != nil && sprite.parent != nil) {
+            sprite.removeFromParent()
+        }
+        
+        let temp = SKSpriteNode.init(color: defaultSpriteColor, size: CGSize(width: Board.blockSize, height: Board.blockSize))
+        temp.zPosition = zPos
+        temp.shader = shader
+        
+        sprite = temp
+    }
+    /*
     override func loadSprite() {
         if(GameState.currentlyEditing) {
             let path1 = UIBezierPath.init()
@@ -163,8 +219,8 @@ class Player: Entity {
             
             sprite = temp
         }
-    }
-    
+    }*/
+    /*
     override func updateSprite() {
         if(GameState.currentlyEditing) {
         } else if(GameState.state == "inverting") {
@@ -254,17 +310,17 @@ class Player: Entity {
                 sprite.alpha = 1.0
             }
         }
-    }
+    }*/
         
     func loadColor(colIndex: Int) -> UIColor {
         if(colIndex == -1) {
             let blockVariation = 0//rand()*Double(Board.colorVariation)
             
-            if((GameState.inverted && GameState.state != "inverting") || (!GameState.inverted && GameState.state == "inverting")) {
-                return UIColor(red: 0.0+(CGFloat(blockVariation)/255.0), green: 0.0+(CGFloat(blockVariation)/255.0), blue: 0.0+(CGFloat(blockVariation)/255.0), alpha: 1.0)
-            } else {
+            //if((GameState.inverted && GameState.state != "inverting") || (!GameState.inverted && GameState.state == "inverting")) {
+                //return UIColor(red: 0.0+(CGFloat(blockVariation)/255.0), green: 0.0+(CGFloat(blockVariation)/255.0), blue: 0.0+(CGFloat(blockVariation)/255.0), alpha: 1.0)
+            //} else {
                 return UIColor(red: 1.0-(CGFloat(blockVariation)/255.0), green: 1.0-(CGFloat(blockVariation)/255.0), blue: 1.0-(CGFloat(blockVariation)/255.0), alpha: 1.0)
-            }
+            //}
         } else {
             let blockVariation = 0//(Board.colorVariation/2.0) - (rand()*Board.colorVariation)
             var colorArray = ColorTheme.colors[Board.colorTheme][colIndex]
@@ -273,11 +329,11 @@ class Player: Entity {
                 colorArray[index] = max(min(colorArray[index] + Int(blockVariation), 255), 0)
             }
             
-            if((GameState.inverted && GameState.state != "inverting") || (!GameState.inverted && GameState.state == "inverting")) {
-                return UIColor(red: 1-(CGFloat(colorArray[0]) / 255.0), green: 1-(CGFloat(colorArray[1]) / 255.0), blue: 1-(CGFloat(colorArray[2]) / 255.0), alpha: 1.0)
-            } else {
+            //if((GameState.inverted && GameState.state != "inverting") || (!GameState.inverted && GameState.state == "inverting")) {
+                //return UIColor(red: 1-(CGFloat(colorArray[0]) / 255.0), green: 1-(CGFloat(colorArray[1]) / 255.0), blue: 1-(CGFloat(colorArray[2]) / 255.0), alpha: 1.0)
+            //} else {
                 return UIColor(red: CGFloat(colorArray[0]) / 255.0, green: CGFloat(colorArray[1]) / 255.0, blue: CGFloat(colorArray[2]) / 255.0, alpha: 1.0)
-            }
+            //}
         }
     }
     
@@ -285,11 +341,11 @@ class Player: Entity {
         if(colIndex == -1) {
             let blockVariation = 0//rand()*Double(Board.colorVariation)
             
-            if(GameState.inverted || (!GameState.inverted && GameState.state == "inverting")) {
-                return [0.0+(CGFloat(blockVariation)/255.0), 0.0+(CGFloat(blockVariation)/255.0), 0.0+(CGFloat(blockVariation)/255.0)]
-            } else {
+            //if(GameState.inverted || (!GameState.inverted && GameState.state == "inverting")) {
+                //return [0.0+(CGFloat(blockVariation)/255.0), 0.0+(CGFloat(blockVariation)/255.0), 0.0+(CGFloat(blockVariation)/255.0)]
+            //} else {
                 return [1.0-(CGFloat(blockVariation)/255.0), 1.0-(CGFloat(blockVariation)/255.0), 1.0-(CGFloat(blockVariation)/255.0)]
-            }
+            //}
         } else {
             let blockVariation = 0//(Board.colorVariation/2.0) - (rand()*Board.colorVariation)
             var colorArray = ColorTheme.colors[Board.colorTheme][colIndex]
@@ -298,11 +354,11 @@ class Player: Entity {
                 colorArray[index] = max(min(colorArray[index] + Int(blockVariation), 255), 0)
             }
             
-            if(GameState.inverted || (!GameState.inverted && GameState.state == "inverting")) {
-                return [1-(CGFloat(colorArray[0]) / 255.0), 1-(CGFloat(colorArray[1]) / 255.0), 1-(CGFloat(colorArray[2]) / 255.0)]
-            } else {
+            //if(GameState.inverted || (!GameState.inverted && GameState.state == "inverting")) {
+                //return [1-(CGFloat(colorArray[0]) / 255.0), 1-(CGFloat(colorArray[1]) / 255.0), 1-(CGFloat(colorArray[2]) / 255.0)]
+            //} else {
                 return [CGFloat(colorArray[0]) / 255.0, CGFloat(colorArray[1]) / 255.0, CGFloat(colorArray[2]) / 255.0]
-            }
+            //}
         }
     }
     
@@ -313,9 +369,18 @@ class Player: Entity {
     override func move() {
         movementTotal += hypot(x - nextX, y - nextY)
         
-        //GameState.playerX = nextX
-        //GameState.playerY = nextY
-        
         super.move()
+        
+        if(!hinging) {
+            sprite.position = CGPoint(x: x * Board.blockSize, y: -y * Board.blockSize)
+        } else {
+            if(hingeDirection == "left") {
+                sprite.zRotation = CGFloat(rotation * 3.14159 / 180)
+                sprite.position = CGPoint(x: (x - 0.5 + ((sqrt(2) / 2) * cos((rotation + 45) * 3.14159 / 180))) * Board.blockSize, y: -(y + 0.5 - ((sqrt(2) / 2) * sin((rotation + 45) * 3.14159 / 180))) * Board.blockSize)
+            } else {
+                sprite.zRotation = CGFloat(rotation * 3.14159 / 180)
+                sprite.position = CGPoint(x: (x + 0.5 - ((sqrt(2) / 2) * cos((rotation - 45) * 3.14159 / 180))) * Board.blockSize, y: -(y + 0.5 - ((sqrt(2) / 2) * sin((-rotation + 45) * 3.14159 / 180))) * Board.blockSize)
+            }
+        }
     }
 }

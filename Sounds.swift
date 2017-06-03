@@ -62,7 +62,7 @@ class Sounds {
         currentMusic = [getSound("shiftIntro"), getSound("shiftLoop")]
         currentMusicPlaybackMode = musicPlaybackMode.notPlaying
         
-        playMusic()
+        //playMusic()
     }
     
     static func playMusic() {
