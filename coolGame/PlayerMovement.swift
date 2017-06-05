@@ -11,8 +11,6 @@ import SpriteKit
 
 extension Player {
     func move(delta: Double) {
-        //print(movingLeft, movingRight, horizontalMovementTimer)
-        //print(verticalMovementTimer)
         if((movingLeft && !movingRight) || (movingLeft && movingRight && horizontalMovementTimer < 0)) {
             horizontalMovementTimer -= delta * GameState.accelerationBonus
             if(horizontalMovementTimer < -GameState.slideLength) {
@@ -43,7 +41,7 @@ extension Player {
                 //jump
                 verticalMovementTimer = -GameState.jumpLength
                 //jump particles
-                let numParticles = Int(2.5+(rand()*0.9))
+                /*let numParticles = Int(2.5+(rand()*0.9))
                 for i in 0...numParticles-1 {
                     var xPos: Double = rand()
                     var angle: Double
@@ -51,11 +49,11 @@ extension Player {
                     xPos = (rand() * (1.0 / Double(numParticles))) + (Double(i) / Double(numParticles))
                     angle = ((rand() * 60) - 30) - ((1 - xPos) * 180)
                     
-                    /*let block = Board.blocks[Int(y + 1.5)][Int(x+xPos)]!
+                    let block = Board.blocks[Int(y + 1.5)][Int(x+xPos)]!
                     if(block.type != 0 && block.type != 5 && Entity.collides(this: self, with: block)) {
                         EntityManager.addParticle(particle: Particle.init(x: x+xPos, y: y + ((rand() - 0.5) * 0.2), angle: angle, distance: 0.2 + (rand()*0.2), shape: 0, color: block.color, lifeTime: 0.3+(rand()*0.3), deathType: 0))
-                    }*/
-                }
+                    }
+                }*/
             }
         }
         let prevHeight = GameState.heightAt(time: verticalMovementTimer)
@@ -69,7 +67,25 @@ extension Player {
         prevXVel = xVel
         prevYVel = yVel
         
-        super.update(delta: delta, actions: [])
+        super.update(delta: delta)
+    }
+    
+    func moveDummy(delta: Double) {
+        horizontalMovementTimer = 0
+        xVel = GameState.maxMoveSpeed * ((horizontalMovementTimer) / GameState.slideLength) * delta
+        
+        let prevHeight = GameState.heightAt(time: verticalMovementTimer)
+        verticalMovementTimer += delta
+        if(verticalMovementTimer > 0 && verticalMovementTimer-delta < 0 && prevYVel < 0) {
+            verticalMovementTimer = 0
+        }
+        let nextHeight = GameState.heightAt(time: verticalMovementTimer)
+        yVel = nextHeight - prevHeight
+        
+        prevXVel = xVel
+        prevYVel = yVel
+        
+        super.update(delta: delta)
     }
     
     func rotate(delta: Double) {
@@ -146,6 +162,7 @@ extension Player {
     func collide() {
         canHingeLeft = false
         canHingeRight = false
+        hitFloorCenter = false
         hitCeiling = false
         
         checkNorthSouthCollision()
@@ -179,8 +196,11 @@ extension Player {
                 
                 //make sure the player is able to collide with the current block or moving block by the collision rules defined by entity class
                 if(Entity.collides(this: self, with: entity)) {
-                    
                     let colAcc = 0.001
+                    
+                    if(rectContainsPoint(rect: CGRect.init(x: entity.nextX, y: entity.nextY-1, width: 1.0, height: 1.0), point: CGPoint(x: x + 0.5, y: nextY))) {
+                        hitFloorCenter = true
+                    }
                     
                     if(yVel > 0) {
                         if(rectContainsPoint(rect: CGRect.init(x: entity.nextX, y: entity.nextY-1, width: 1.0, height: 1.0), point: CGPoint(x: x + colAcc, y: nextY)) || rectContainsPoint(rect: CGRect.init(x: entity.nextX, y: entity.nextY-1, width: 1.0, height: 1.0), point: CGPoint(x: x + 1 - colAcc, y: nextY)) )  {
@@ -221,24 +241,26 @@ extension Player {
                                 Camera.shake(forTime: (prog*maxShakeTime)+((1-prog)*minShakeTime), withIntensity: (prog*maxIntensity)+((1-prog)*minIntensity), dropoff: true)
                             }
                             
-                            nextY = entity.nextY - 1
                             yVel = 0
                             verticalMovementTimer = 0
                             
                             if(entity.isDangerous) {
-                                //GameState.gameAction(type: "kill player")
+                                killPlayer()
+                            } else {
+                                nextY = entity.nextY - 1
                             }
                             //print(" hit ground, with block at \(Int(entity.x)), \(Int(entity.y))")
                         }
                     } else if(yVel < 0) {
                         if(rectContainsPoint(rect: CGRect.init(x: entity.nextX, y: entity.nextY-1, width: 1.0, height: 1.0), point: CGPoint(x: (nextX + 0.5), y: (nextY - (sqrt(3.0) / 2.0)) + colAcc))) {
                             
-                            nextY = entity.nextY + (sqrt(3.0) / 2.0) + 2*colAcc
                             yVel = 0
                             verticalMovementTimer = 0
                             
                             if(entity.isDangerous) {
-                                //GameState.gameAction(type: "kill player")
+                                killPlayer()
+                            } else {
+                                nextY = entity.nextY + (sqrt(3.0) / 2.0) + 2*colAcc
                             }
                             //print(" hit ceiling, with block at \(Int(entity.x)), \(Int(entity.y))  xmod = \(xMod)")
                         }
@@ -246,7 +268,7 @@ extension Player {
                         if(rectContainsPoint(rect: CGRect.init(x: entity.nextX, y: entity.nextY-1+colAcc, width: 1.0, height: 1.0), point: CGPoint(x: x + 1 - colAcc, y: nextY+colAcc))) {
                             
                             if(entity.isDangerous) {
-                                //GameState.gameAction(type: "kill player")
+                                killPlayer()
                             }
                         }
                     }
@@ -283,7 +305,7 @@ extension Player {
                         if(rectContainsPoint(rect: CGRect.init(x: entity.nextX, y: entity.nextY-1, width: 1.0, height: 1.0), point: CGPoint(x: (nextX + xMod + colAcc), y: (nextY + yMod - colAcc))) && entity.nextX + 0.5 - colAcc < x) {
                             
                             if(entity.isDangerous) {
-                                //GameState.gameAction(type: "kill player")
+                                killPlayer()
                             } else {
                                 nextX = entity.nextX + 1 - xMod + colAcc
                                 if(posInEdge <= 2.0 / step) {
@@ -299,7 +321,7 @@ extension Player {
                         if(rectContainsPoint(rect: CGRect.init(x: entity.nextX, y: entity.nextY-1, width: 1.0, height: 1.0), point: CGPoint(x: (nextX + 1 - xMod - colAcc), y: (nextY + yMod - colAcc))) && entity.nextX + 0.5 > x) {
                             
                             if(entity.isDangerous) {
-                                //GameState.gameAction(type: "kill player")
+                                killPlayer()
                             } else {
                                 nextX = entity.nextX - 1 + xMod - colAcc
                                 if(posInEdge <= 2.0 / step) {
@@ -314,7 +336,7 @@ extension Player {
                         }
                     }
                 } else {
-                    if(newColorIndex == -1) {
+                    if(newColorIndex == -1 && hitFloorCenter) {
                         if(entity.name == "color change block" && Board.direction == (entity as! ColorChangeBlock).direction) {
                             if(nextY == Double(Int(nextY)) && ((x - colAcc <= entity.x && nextX + colAcc >= entity.x) || (x + colAcc >= entity.x && nextX - colAcc <= entity.x)) && ((y <= entity.y && nextY >= entity.y) || (y >= entity.y && nextY <= entity.y))) {
                                 if((entity as! ColorChangeBlock).colorIndex != colorIndex) {
@@ -324,6 +346,7 @@ extension Player {
                                     
                                     newColorIndex = (entity as! ColorChangeBlock).colorIndex
                                     
+                                    GameState.stopPlayerMovement = true
                                     GameState.gameAction(GameAction.changingColor)
                                 }
                             }
@@ -337,6 +360,7 @@ extension Player {
                                     newColorIndex = -2
                                     
                                     (entity as! ExitBlock).disable()
+                                    GameState.stopPlayerMovement = true
                                     GameState.gameAction(GameAction.endingStage)
                                 }
                             }

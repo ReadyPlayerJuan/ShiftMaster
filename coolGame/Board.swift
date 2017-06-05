@@ -23,7 +23,7 @@ class Board {
     static var colorTheme = 0
     static var direction = 0
     static let colorVariation = 25.0
-    static let grayVariation = 40.0
+    static let grayVariation = 35.0
     
     static var stageID = -1
     
@@ -34,7 +34,7 @@ class Board {
     class func nextStage() {
         if(GameState.inEditor) {
             currentStage = Stage.loadStage(code: Memory.getStageEdit())
-        } else if(GameState.testing) {
+        } else if(GameState.testing || true) {
             blockSize = defaultBlockSize
             if(currentStage == nil) {
                 loadAllStages()
@@ -100,7 +100,7 @@ class Board {
                     entities.append(ColoredBlock.init(x: col, y: row, colorIndex: temp[row][col]-2))
                     //blocks[row][col] = Block.init(blockType: 2, color: temp[row][col]-2, secondaryColor: -1, dir: -1, x: Double(col), y: Double(row))
                 } else if(temp[row][col] == 99) {
-                    entities.append(SolidBlock.init(x: col, y: row))
+                    entities.append(HazardBlock.init(x: col, y: row))
                     //blocks[row][col] = Block.init(blockType: 6, color: -1, secondaryColor: -1, dir: -1, x: Double(col), y: Double(row))
                 } else if(temp[row][col] >= 10) {
                     entities.append(NonsolidBlock.init(x: col, y: row))
@@ -111,16 +111,15 @@ class Board {
                     var colorIndex2 = s - (100*direction) - (colorIndex*10)
                     colorIndex -= 2
                     colorIndex2 -= 2
-                    entities.append(ColorChangeBlock.init(x: col, y: row, colorIndex: colorIndex2, direction: direction))
-                    /*if(colorIndex2 == 7) {
-                        blocks[row][col] = Block.init(blockType: 7, color: colorIndex, secondaryColor: -1, dir: direction, x: Double(col), y: Double(row))
+                    
+                    if(colorIndex2 == 7) {
+                        entities.append(InvertBlock.init(x: col, y: row, direction: direction))
                     } else {
                         if(direction >= 4) {
-                            blocks[row][col] = Block.init(blockType: 8, color: colorIndex, secondaryColor: colorIndex2, dir: direction%4, x: Double(col), y: Double(row))
                         } else {
-                            blocks[row][col] = Block.init(blockType: 3, color: colorIndex, secondaryColor: colorIndex2, dir: direction, x: Double(col), y: Double(row))
+                            entities.append(ColorChangeBlock.init(x: col, y: row, colorIndex: colorIndex2, direction: direction))
                         }
-                    }*/
+                    }
                 } else if(temp[row][col] < 0) {
                     entities.append(NonsolidBlock.init(x: col, y: row))
                     let direction = (abs(temp[row][col])/10)-1

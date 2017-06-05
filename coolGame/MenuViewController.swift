@@ -32,15 +32,14 @@ class MenuViewController: UIViewController, AVAudioPlayerDelegate {
                 view.presentScene(scene)
             }
             
-            if #available(iOS 10.0, *) {
-                view.preferredFramesPerSecond = 200
-            }
             view.isMultipleTouchEnabled = true
             view.ignoresSiblingOrder = true
             view.showsFPS = true
             view.showsNodeCount = true
             view.shouldCullNonVisibleNodes = true
         }
+        
+        goToScene("game")
     }
     
     func goToScene(_ name: String) {

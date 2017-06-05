@@ -9,7 +9,7 @@
 import Foundation
 import SpriteKit
 
-extension Player {
+/*extension Player {
     func loadColorChangeEffect() {
         horizontalMovementTimer = 0
         verticalMovementTimer = 0
@@ -167,4 +167,4 @@ extension Player {
         }
         return -1
     }
-}
+}*/

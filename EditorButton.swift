@@ -199,9 +199,9 @@ class EditorButton {
         
         sprite[1].alpha = 0.0
         for t in InputController.currentTouches {
-            //if(buttonRect.contains(t) && GameState.state != "rotating" && active) {
-                //isPressed = true
-            //}
+            if(buttonRect.contains(t)) {
+                isPressed = true
+            }
         }
         if(isPressed && !prevPressed && pressTimer == 0) {
             pressTimer = pressTimerMax
@@ -226,7 +226,7 @@ class EditorButton {
     func loadColor() {
         if(colorIndex == -4) {
             let hazardCycle = 15.0
-            var c = 0 + 0 + (GameState.time / (2 * hazardCycle))
+            let c = 0 + 0 + (GameState.time / (2 * hazardCycle))
             
             /*if(GameState.state == "rotating") {
                 let ang = abs(GameState.getRotationValue()) / (3.14159 / 2)

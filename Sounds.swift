@@ -43,7 +43,7 @@ class Sounds {
     static func initSounds() {
         Sounds.loadedSounds = true
         
-        for i in 0...allSounds.count-1 {
+        /*for i in 0...allSounds.count-1 {
             print(i, allSounds[i])
             let url = NSURL(fileURLWithPath: Bundle.main.path(forResource: allSounds[i].fileName, ofType: allSounds[i].fileExtension)!)
             
@@ -60,7 +60,7 @@ class Sounds {
         }
         
         currentMusic = [getSound("shiftIntro"), getSound("shiftLoop")]
-        currentMusicPlaybackMode = musicPlaybackMode.notPlaying
+        currentMusicPlaybackMode = musicPlaybackMode.notPlaying*/
         
         //playMusic()
     }

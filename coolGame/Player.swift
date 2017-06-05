@@ -29,10 +29,14 @@ class Player: Entity {
     var jumping = false
     var canHingeLeft = false
     var canHingeRight = false
+    var hitFloorCenter = false
     var hitCeiling = false
     
     var hinging = false
     var hingeDirection = "left"
+    
+    var dead = false
+    var preDeathDirection = 0
     
     var colorIndex = -1
     var newColorIndex = -1
@@ -57,7 +61,7 @@ class Player: Entity {
         hitboxType = HitboxType.player
         
         defaultSpriteColor = UIColor.white
-        shader = PlayerShader.shader
+        shader = PlayerShaders.defaultShader
         
         reset()
         
@@ -65,6 +69,7 @@ class Player: Entity {
     }
     
     func reset() {
+        dead = false
         x = Double(Board.spawnPoint.x)
         y = Double(Board.spawnPoint.y)
         nextX = x
@@ -75,23 +80,15 @@ class Player: Entity {
         horizontalMovementTimer = 0
         
         colorIndex = -1
+        defaultSpriteColor = UIColor.white
         collidesWithType = [0, 10, 11, 12, 13, 14, 15]
         
         load()
-        /*if(GameState.time > 0.5 && !GameState.inEditor && !(GameState.state == "stage transition")) {
-            sprite.removeFromParent()
-            loadSprite()
-            EntityManager.redrawEntities(node: GameState.drawNode, name: "player")
-        } else {
-            loadSprite()
-        }*/
     }
     
-    override func update(delta: TimeInterval, actions: [GameAction]) {
+    override func update(delta: TimeInterval) {
         checkInputForMovement()
         
-        print(x, y)
-        print(sprite.position)
         if(!GameState.stopPlayerMovement) {
             if(hinging) {
                 rotate(delta: delta)
@@ -102,9 +99,16 @@ class Player: Entity {
             
         }
         
-        if(actions.contains(GameAction.changingColor) || actions.contains(GameAction.endingStage)) {
-            nextX = Double(Int(x + 0.5))
-            x = nextX
+        if(GameState.currentActions.count > 0) {
+            for i in 0...GameState.currentActions.count-1 {
+                switch(GameState.currentActions[i].gameAction) {
+                case .respawningPlayer:
+                    updateDeathEffect(pct: GameState.currentActionPercents[i])
+                    break
+                default:
+                    break
+                }
+            }
         }
     }
     
@@ -120,6 +124,23 @@ class Player: Entity {
             sprite.zRotation = 0
             super.gameActionFirstFrame(action)
             break
+        case .changingColor:
+            sprite.shader = PlayerShaders.getRandomColorChangeShader()
+            let color = ColorTheme.getColor(colorIndex: newColorIndex, colorVariation: false).cgColor
+            let components: [Float] = [Float(color.components![0]), Float(color.components![1]), Float(color.components![2]), 1]
+            sprite.setValue(SKAttributeValue(vectorFloat4: vector_float4(components)), forAttribute: "a_new_color")
+            break
+        case .endingStage:
+            sprite.shader = PlayerShaders.getRandomColorChangeShader()
+            sprite.setValue(SKAttributeValue(vectorFloat4: vector_float4([0, 0, 0, 0])), forAttribute: "a_new_color")
+            break
+        case .respawningPlayer:
+            deathParticleColor = defaultSpriteColor.copy() as! UIColor
+            defaultSpriteColor = UIColor.clear
+            load()
+            EntityManager.redrawEntities(node: GameState.drawNode, name: "player")
+            loadDeathEffect()
+            break
         default:
             break
         }
@@ -134,6 +155,9 @@ class Player: Entity {
             //hinging = false
             break
         case .changingColor:
+            sprite.shader = PlayerShaders.defaultShader
+            //sprite.setValue(SKAttributeValue(float: 0), forAttribute: "a_time_passed")
+            
             colorIndex = newColorIndex
             newColorIndex = -1
             defaultSpriteColor = ColorTheme.getColor(colorIndex: colorIndex, colorVariation: false)
@@ -145,7 +169,18 @@ class Player: Entity {
             collidesWithType.append(colorIndex+10)
             break
         case .endingStage:
+            sprite.shader = PlayerShaders.defaultShader
+            //sprite.setValue(SKAttributeValue(float: 0), forAttribute: "a_time_passed")
+            
             sprite.alpha = 0
+            break
+        case .stageTransitionIn:
+            moveDummy(delta: 0.01)
+            break
+        case .respawningPlayer:
+            reset()
+            EntityManager.redrawEntities(node: GameState.drawNode, name: "player")
+            moveDummy(delta: 0.01)
             break
         default:
             break
@@ -167,6 +202,30 @@ class Player: Entity {
     
     override func updateAttributes() {
         sprite.setValue(SKAttributeValue(vectorFloat2: vector_float2(Float(x), Float(y))), forAttribute: "a_player_position")
+        
+        if(GameState.currentActions.count > 0) {
+            for i in 0...GameState.currentActions.count-1 {
+                switch(GameState.currentActions[i].gameAction) {
+                case .changingColor:
+                    sprite.setValue(SKAttributeValue(float: Float(GameState.currentActionPercents[i])), forAttribute: "a_time_passed")
+                    break
+                case .endingStage:
+                    sprite.setValue(SKAttributeValue(float: Float(GameState.currentActionPercents[i])), forAttribute: "a_time_passed")
+                    break
+                default:
+                    break
+                }
+            }
+        }
+    }
+    
+    func killPlayer() {
+        if(!dead) {
+            dead = true
+            preDeathDirection = Board.direction
+            GameState.stopPlayerMovement = true
+            GameState.gameAction(GameAction.respawningPlayer)
+        }
     }
     
     override func load() {

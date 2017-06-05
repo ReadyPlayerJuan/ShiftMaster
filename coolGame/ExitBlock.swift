@@ -38,8 +38,8 @@ class ExitBlock: Entity {
         disabled = true
     }
     
-    override func update(delta: TimeInterval, actions: [GameAction]) {
-        super.update(delta: delta, actions: [])
+    override func update(delta: TimeInterval) {
+        super.update(delta: delta)
     }
     
     override func updateAttributes() {
@@ -81,6 +81,7 @@ class ExitBlock: Entity {
         sprite = SKSpriteNode.init(color: defaultSpriteColor, size: CGSize.init(width: Board.blockSize, height: Board.blockSize))
         sprite.shader = shader
         
+        sprite.zPosition = zPos
         sprite.position = CGPoint(x: x * Board.blockSize, y: -y * Board.blockSize)
     }
 }

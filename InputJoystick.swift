@@ -77,7 +77,7 @@ class InputJoystick {
             if(InputController.prevTouches.count > 0) {
                 for i in 0...InputController.prevTouches.count-1 {
                     if(i < InputController.currentTouches.count) {
-                        if(InputController.prevTouches[i].equalTo(prevJoystickTouch!)) {
+                        if(InputController.currentTouches[i].equalTo(prevJoystickTouch!)) {
                             finished = true
                             prevJoystickTouch = InputController.currentTouches[i]
                             

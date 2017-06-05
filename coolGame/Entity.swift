@@ -45,7 +45,7 @@ class Entity {
         ID = EntityManager.getID()
     }
     
-    func update(delta: TimeInterval, actions: [GameAction]) {
+    func update(delta: TimeInterval) {
         nextX = x + xVel
         nextY = y + yVel
     }

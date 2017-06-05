@@ -29,6 +29,7 @@ class GameScene: SKScene {
         if(GameState.allActions.count == 0) {
             GameState.initGameActions()
         }
+        GameState.initShaders()
         beginGame()
     }
     
@@ -42,7 +43,7 @@ class GameScene: SKScene {
         drawNode = SKNode.init()
         rotateNode = SKNode.init()
         
-        self.shader = PostShader.shader
+        self.shader = PostShaders.defaultShader
         self.shouldEnableEffects = true
         
         addChild(superNode)

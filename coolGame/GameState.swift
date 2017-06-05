@@ -28,6 +28,7 @@ enum GameAction: Int {
     case stageTransitionOut = 4
     case changingColor = 5
     case endingStage = 6
+    case respawningPlayer = 7
 }
 
 class GameState {
@@ -43,10 +44,14 @@ class GameState {
     
     static var allActions: [Action] = []
     static var currentActions: [Action] = []
-    static var currentActionTimes: [Double] = []
+    static var currentActionTimers: [Double] = []
+    static var currentActionPercents: [Double] = []
     static var newActions: [Action] = []
     
     static var stopPlayerMovement = false
+    
+    static var maxDeathRotation = 0.0
+    static var stageTransitionAngle = 0.0
     
     /*static var prevState = "in menu"
     static var prevPlayerState =  "free"
@@ -58,7 +63,9 @@ class GameState {
     static var currentDelta = 0.0
     static var ignoreDelta = true
     
-    static var firstFrame = false
+    static var exitTarget = 0
+    
+    /*static var firstFrame = false
     static var lastFrame = false
     
     static var enteringStage = true
@@ -67,7 +74,6 @@ class GameState {
     static var stageTransitionTimerMax = stageTransitionTimerMaxDefaults[0]
     static var stageTransitionAngle = 0.0
     static var stageTransitionType = 0
-    static var exitTarget = 0
     
     static var endingStage = false
     static var colorChangeTimer = 0.0
@@ -119,7 +125,7 @@ class GameState {
     static let GAcolorRevealTimerMin = 0.85
     static let GAcolorRevealTimerMax = 0.98
     
-     /*static let GArotateTimerMin = 0.0
+     static let GArotateTimerMin = 0.0
      static let GArotateTimerMax = 0.2
      static let GAshadeChangeTimerMin = 0.0
      static let GAshadeChangeTimerMax = 0.2
@@ -153,10 +159,11 @@ class GameState {
             Action(ID: 0, length: 1.0, gameAction: GameAction.rotateLeft, stopPlayerMovement: false, subGameActions: [GameAction.rotateStopMovement], subGameActionStarts: [-1]),
             Action(ID: 1, length: 1.0, gameAction: GameAction.rotateRight, stopPlayerMovement: false, subGameActions: [GameAction.rotateStopMovement], subGameActionStarts: [-1]),
             Action(ID: 2, length: 0.8, gameAction: GameAction.rotateStopMovement, stopPlayerMovement: true, subGameActions: [], subGameActionStarts: []),
-            Action(ID: 3, length: 4.0, gameAction: GameAction.stageTransitionIn, stopPlayerMovement: true, subGameActions: [], subGameActionStarts: []),
-            Action(ID: 4, length: 4.0, gameAction: GameAction.stageTransitionOut, stopPlayerMovement: true, subGameActions: [GameAction.stageTransitionIn], subGameActionStarts: [1]),
+            Action(ID: 3, length: 6.0, gameAction: GameAction.stageTransitionIn, stopPlayerMovement: true, subGameActions: [], subGameActionStarts: []),
+            Action(ID: 4, length: 6.0, gameAction: GameAction.stageTransitionOut, stopPlayerMovement: true, subGameActions: [GameAction.stageTransitionIn], subGameActionStarts: [1]),
             Action(ID: 5, length: 1.5, gameAction: GameAction.changingColor, stopPlayerMovement: true, subGameActions: [], subGameActionStarts: []),
-            Action(ID: 6, length: 1.5, gameAction: GameAction.endingStage, stopPlayerMovement: true, subGameActions: [GameAction.stageTransitionOut], subGameActionStarts: [1])
+            Action(ID: 6, length: 1.5, gameAction: GameAction.endingStage, stopPlayerMovement: true, subGameActions: [GameAction.stageTransitionOut], subGameActionStarts: [1]),
+            Action(ID: 7, length: 3.0, gameAction: GameAction.respawningPlayer, stopPlayerMovement: true, subGameActions: [], subGameActionStarts: [])
         ]
     }
     
@@ -173,19 +180,21 @@ class GameState {
     class func updateGameActions() {
         while(newActions.count > 0) {
             currentActions.append(newActions[0])
-            currentActionTimes.append(0)
+            currentActionTimers.append(0)
             
             gameActionFirstFrame(newActions[0].gameAction)
             EntityManager.gameActionFirstFrame(newActions[0].gameAction)
+            print("started", newActions[0].gameAction)
             
             if(newActions[0].subGameActions.count > 0) {
                 for i in 0...newActions[0].subGameActions.count-1 {
                     if(newActions[0].subGameActionStarts[i] == -1) {
                         currentActions.append(allActions[newActions[0].subGameActions[i].rawValue])
-                        currentActionTimes.append(0)
+                        currentActionTimers.append(0)
                         
                         gameActionFirstFrame(newActions[0].subGameActions[i])
                         EntityManager.gameActionFirstFrame(newActions[0].subGameActions[i])
+                        print("started", newActions[0].subGameActions[i])
                     }
                 }
             }
@@ -204,10 +213,9 @@ class GameState {
                 stopPlayerMovement = true
             }
             
-            let prevProgression = currentActionTimes[index] / action.length
-            currentActionTimes[index] += currentDelta
-            let progression = currentActionTimes[index] / action.length
-            print(action.gameAction)
+            let prevProgression = currentActionTimers[index] / action.length
+            currentActionTimers[index] += currentDelta
+            let progression = currentActionTimers[index] / action.length
             
             if(action.subGameActionStarts.count > 0) {
                 for subActionIndex in 0...action.subGameActionStarts.count-1 {
@@ -219,11 +227,12 @@ class GameState {
             
             if(progression >= 1) {
                 currentActions.remove(at: index)
-                currentActionTimes.remove(at: index)
+                currentActionTimers.remove(at: index)
                 index -= 1
                 
                 gameActionLastFrame(action.gameAction)
                 EntityManager.gameActionLastFrame(action.gameAction)
+                print("ended", action.gameAction)
             }
             
             index += 1
@@ -231,29 +240,16 @@ class GameState {
     }
     
     class func initEntities() {
-        //superNode.addChild(SKSpriteNode.init(color: UIColor.red, size: CGSize(width: 100, height: 100)))
         EntityManager.entities = []
         
         let p = Player.init()
         EntityManager.addEntity(entity: p)
-        /*
-        for row in 0 ... Board.blocks.count-1 {
-            for col in 0 ... Board.blocks[0].count-1 {
-                EntityManager.addEntity(entity: Board.blocks[row][col]!)
-            }
-        }
         
-        if(Board.otherEntities.count != 0) {
-            for e in Board.otherEntities {
-                EntityManager.addEntity(entity: e)
-            }
-        }*/
         for e in Board.entities {
             EntityManager.addEntity(entity: e)
         }
         
         (EntityManager.getPlayer()! as! Player).reset()
-        //EntityManager.loadLightSources()
         
         EntityManager.sortEntities()
         EntityManager.redrawEntities(node: drawNode, name: "all")
@@ -276,33 +272,97 @@ class GameState {
         
         updateGameActions()
         
-        var gameActions: [GameAction] = []
-        for action in currentActions {
-            gameActions.append(action.gameAction)
+        //var gameActions: [GameAction] = []
+        currentActionPercents = []
+        if(currentActions.count > 0) {
+            for i in 0...currentActions.count-1 {
+                let action = currentActions[i]
+                //gameActions.append(action.gameAction)
+                currentActionPercents.append(currentActionTimers[i] / action.length)
+            }
         }
-        EntityManager.updateEntities(delta: currentDelta, actions: gameActions)
+        EntityManager.updateEntities(delta: currentDelta)
         
-        
-        Camera.centerOnPlayer()
         if(currentActions.count > 0) {
             for i in 0...currentActions.count-1 {
                 let action = currentActions[i]
                 
                 switch(action.gameAction) {
                 case .rotateLeft:
-                    var prog = currentActionTimes[i] / action.length
-                    prog = skewToEdges(prog: prog, power: 4)
-                    rotateNode.zRotation = -CGFloat(3.14159 / 2 * (1 - prog))
+                    Camera.centerOnPlayer()
+                    var pct = currentActionPercents[i]
+                    pct = skewToEdges(pct: pct, power: 4)
+                    rotateNode.zRotation = -CGFloat(3.14159 / 2 * (1 - pct))
                     break
                 case .rotateRight:
-                    var prog = currentActionTimes[i] / action.length
-                    prog = skewToEdges(prog: prog, power: 4)
-                    rotateNode.zRotation = CGFloat(3.14159 / 2 * (1 - prog))
+                    Camera.centerOnPlayer()
+                    var pct = currentActionPercents[i]
+                    pct = skewToEdges(pct: pct, power: 4)
+                    rotateNode.zRotation = CGFloat(3.14159 / 2 * (1 - pct))
+                    break
+                case .respawningPlayer:
+                    var pct = currentActionPercents[i]
+                    pct = skewToEdges(pct: pct, power: 4)
+                    rotateNode.zRotation = CGFloat(maxDeathRotation * (1 - pct))
+                    
+                    let spawnPoint = CGPoint(x: -Double(Board.spawnPoint.x) * Board.blockSize, y: Double(Board.spawnPoint.y) * Board.blockSize)
+                    Camera.centerOnPlayer()
+                    Camera.centerOnPoint(CGPoint(x: CGFloat(Camera.targetX * (1 - pct)) + (spawnPoint.x * CGFloat(pct)), y: CGFloat(Camera.targetY * (1 - pct)) + (spawnPoint.y * CGFloat(pct))))
+                case .stageTransitionOut:
+                    let pct = currentActionPercents[i]
+                    let zoomOutEnd = 0.4
+                    let moveAwayStart = 0.45
+                    
+                    if(pct < zoomOutEnd) {
+                        let pct2 = pct / zoomOutEnd
+                        Camera.targetZoom = 1 - (0.5 * skewToEdges(pct: pct2, power: 3))
+                    } else {
+                        let pct2 = min(1, (pct - zoomOutEnd) / (1 - zoomOutEnd))
+                        Camera.targetZoom = 0.5 + (0.5 * skewToEdges(pct: pct2, power: 3))
+                    }
+                    
+                    if(pct < moveAwayStart) {
+                        //let pct2 = pct / moveAwayStart
+                        //Camera.targetZoom = 1 - (0.5 * skewToEdges(pct: pct2, power: 3))
+                    } else {
+                        let pct2 = (pct - moveAwayStart) / (1 - moveAwayStart)
+                        Camera.centerOnPlayer()
+                        Camera.targetX += pow(pct2, 3) * cos(stageTransitionAngle) * Board.blockSize * 200
+                        Camera.targetY += pow(pct2, 3) * sin(stageTransitionAngle) * Board.blockSize * 200
+                        rotateNode.zRotation = CGFloat(pow(pct2, 3.0) * 20)
+                    }
+                    break
+                case .stageTransitionIn:
+                    let pct = 1 - currentActionPercents[i]
+                    let zoomOutEnd = 0.4
+                    let moveAwayStart = 0.45
+                    
+                    if(pct < zoomOutEnd) {
+                        let pct2 = pct / zoomOutEnd
+                        Camera.targetZoom = 1 - (0.5 * skewToEdges(pct: pct2, power: 3))
+                    } else {
+                        let pct2 = min(1, (pct - zoomOutEnd) / (1 - zoomOutEnd))
+                        Camera.targetZoom = 0.5 + (0.5 * skewToEdges(pct: pct2, power: 3))
+                    }
+                    
+                    if(pct < moveAwayStart) {
+                        //let pct2 = pct / moveAwayStart
+                        //Camera.targetZoom = 1 - (0.5 * skewToEdges(pct: pct2, power: 3))
+                    } else {
+                        let pct2 = (pct - moveAwayStart) / (1 - moveAwayStart)
+                        Camera.centerOnPlayer()
+                        Camera.targetX += pow(pct2, 3) * cos(stageTransitionAngle) * Board.blockSize * 200
+                        Camera.targetY += pow(pct2, 3) * sin(stageTransitionAngle) * Board.blockSize * 200
+                        rotateNode.zRotation = CGFloat(pow(pct2, 3.0) * 20)
+                    }
                     break
                 default:
+                    Camera.centerOnPlayer()
                     break
                 }
             }
+        } else {
+            Camera.centerOnPlayer()
         }
         
         Camera.update(delta: delta)
@@ -313,11 +373,44 @@ class GameState {
         switch(action) {
         case .rotateLeft:
             Board.rotateLeft()
-            BlockShaders.triangleBlockShader.uniformNamed("u_board_direction")?.floatValue = Float(Board.direction)
+            BlockShaders.updateDirection()
             break
         case .rotateRight:
             Board.rotateRight()
-            BlockShaders.triangleBlockShader.uniformNamed("u_board_direction")?.floatValue = Float(Board.direction)
+            BlockShaders.updateDirection()
+            break
+        case .respawningPlayer:
+            switch(Board.direction) {
+            case 0:
+                maxDeathRotation = 0
+                break
+            case 1:
+                Board.rotateLeft()
+                EntityManager.gameActionFirstFrame(GameAction.rotateLeft)
+                maxDeathRotation = -3.14159 / 2.0
+                break
+            case 2:
+                Board.rotateRight()
+                EntityManager.gameActionFirstFrame(GameAction.rotateRight)
+                Board.rotateRight()
+                EntityManager.gameActionFirstFrame(GameAction.rotateRight)
+                maxDeathRotation = 3.14159 * sign(rand() - 0.5)
+                break
+            case 3:
+                Board.rotateRight()
+                EntityManager.gameActionFirstFrame(GameAction.rotateRight)
+                maxDeathRotation = 3.14159 / 2.0
+                break
+            default:
+                break
+            }
+            BlockShaders.updateDirection()
+            break
+        case .stageTransitionOut:
+            stageTransitionAngle = rand() * 3.14159 * 2
+            break
+        case .stageTransitionIn:
+            stageTransitionAngle = rand() * 3.14159 * 2
             break
         default:
             break
@@ -326,10 +419,17 @@ class GameState {
     
     class func gameActionLastFrame(_ action: GameAction) {
         switch(action) {
+        case .respawningPlayer:
+            break
         case .stageTransitionOut:
+            updateGameActions()
             Board.nextStage()
             initEntities()
-            BlockShaders.triangleBlockShader.uniformNamed("u_board_direction")?.floatValue = Float(Board.direction)
+            BlockShaders.updateDirection()
+            break
+        case .stageTransitionIn:
+            Camera.targetZoom = 1
+            rotateNode.zRotation = 0
             break
         default:
             break
@@ -338,156 +438,22 @@ class GameState {
     
     class func initShaders() {
         BlockShaders.initShaders()
-        PlayerShader.initShader()
-        PostShader.initShader()
+        PlayerShaders.initShaders()
+        PostShaders.initShaders()
     }
     
     class func beginGame() {
-        inverted = false
-        enteringStage = true
-        
-        stageTransitionType = 0
-        //state = "stage transition"
-        //playerState = "free"
-        stageTransitionTimerMax = stageTransitionTimerMaxDefaults[stageTransitionType]
-        stageTransitionTimer = stageTransitionTimerMax
-        
         Board.reset()
         Board.nextStage()
         initEntities()
     }
-    /*
-    class func beginStageTransition() {
-        stageTransitionType = Board.currentStage!.stageTransitionType
-        if(stageTransitionType == 1) {
-            for r in 0...Board.blocks.count-1 {
-                for c in 0...Board.blocks[0].count-1 {
-                    Board.blocks[r][c]!.beginStageBreakaway()
-                }
-            }
-        }
-        
-        state = "stage transition"
-        playerState = "paused"
-        
-        stageTransitionTimerMax = stageTransitionTimerMaxDefaults[stageTransitionType]
-        stageTransitionTimer = stageTransitionTimerMax
-        
-        enteringStage = false
-        stageTransitionAngle = rand()*(2*3.14159)
-    }*/
     
     class func heightAt(time: Double) -> Double {
         return (GameState.gravity * (time * time)) + GameState.jumpHeight
     }
-    /*
-    class func getStageTransitionVector() -> CGVector {
-        var vector = CGVector(dx: 0, dy: 0)
-        vector.dx += 0
-        
-        let distance = 1600.0*Double(Board.blockSize)
-        
-        let n = 4.5
-        if(!enteringStage) {
-            vector.dx = CGFloat(distance*cos(stageTransitionAngle)*pow(1.0-(stageTransitionTimer/stageTransitionTimerMax), n))
-            vector.dy = CGFloat(distance*sin(stageTransitionAngle)*pow(1.0-(stageTransitionTimer/stageTransitionTimerMax), n))
-        } else {
-            vector.dx = CGFloat(-distance*cos(stageTransitionAngle)*pow(0.0+(stageTransitionTimer/stageTransitionTimerMax), n))
-            vector.dy = CGFloat(-distance*sin(stageTransitionAngle)*pow(0.0+(stageTransitionTimer/stageTransitionTimerMax), n))
-        }
-        
-        return vector
-    }
     
-    class func getInversionLinePosition() -> Double {
-        let minX = (EntityManager.getPlayer()!.x) - (Double(screenWidth / 2) / Board.blockSize) - 1
-        return minX + (((Double(screenWidth) / Board.blockSize) + 2) * (1-(inversionTimer / inversionTimerMax)))
-    }
-    
-    class func getPrevInversionLinePosition() -> Double {
-        let minX = (EntityManager.getPlayer()!.x) - (Double(screenWidth / 2) / Board.blockSize) - 1
-        return minX + (((Double(screenWidth) / Board.blockSize) + 2) * (1-(max(0.0, (inversionTimer+currentDelta)) / inversionTimerMax)))
-    }
-    
-    class func getColorRevealLinePosition() -> Double {
-        let minX = (EntityManager.getPlayer()!.x) - (Double(screenWidth / 2) / Board.blockSize) - 1
-        return minX + (((Double(screenWidth) / Board.blockSize) + 2) * (1-(colorRevealTimer / colorRevealTimerMax)))
-    }
-    
-    class func getPrevColorRevealLinePosition() -> Double {
-        let minX = (EntityManager.getPlayer()!.x) - (Double(screenWidth / 2) / Board.blockSize) - 1
-        return minX + (((Double(screenWidth) / Board.blockSize) + 2) * (1-(max(0.0, (colorRevealTimer+currentDelta)) / colorRevealTimerMax)))
-    }
-    
-    class func getRotationValue() -> Double {
-        var b = rotateTimer / rotateTimerMax
-        let bottomHalf = b < 0.5
-        b -= 0.5
-        b = abs(b)
-        b *= 2
-        b = 1.0-b
-        b = pow(b, 4)
-        b = 1.0-b
-        b /= 2
-        if(bottomHalf) {
-            b *= -1
-        }
-        b += 0.5
-        
-        b *= 3.14159 / 2
-        if(rotateDirection == "left") {
-            b *= -1
-        }
-        return b
-    }
-    
-    class func getDeathVector() -> CGVector {
-        var vector = CGVector.init(dx: 0.0, dy: 0.0)
-        
-        var b = deathTimer / deathTimerMax
-        let bottomHalf = b < 0.5
-        b -= 0.5
-        b = abs(b)
-        b *= 2
-        b = 1.0-b
-        b = pow(b, 4)
-        b = 1.0-b
-        b /= 2
-        if(bottomHalf) {
-            b *= -1
-        }
-        b += 0.5
-        
-        vector.dx = CGFloat(1-b)*(Board.spawnPoint.x - CGFloat(EntityManager.getPlayer()!.x))
-        vector.dy = CGFloat(1-b)*(Board.spawnPoint.y - CGFloat(EntityManager.getPlayer()!.y))
-        
-        return vector
-    }
-    
-    class func getDeathRotation() -> Double {
-        var b = deathTimer / deathTimerMax
-        let bottomHalf = b < 0.5
-        b -= 0.5
-        b = abs(b)
-        b *= 2
-        b = 1.0-b
-        b = pow(b, 4)
-        b = 1.0-b
-        b /= 2
-        if(bottomHalf) {
-            b *= -1
-        }
-        b += 0.5
-        
-        b *= (Double(numRotations) * 3.14159) / 2
-        if(rotateDirection == "left") {
-            b *= -1
-        }
-        return b
-    }
-    */
-    class func skewToEdges(prog: Double, power: Double) -> Double {
-        var b = prog
+    class func skewToEdges(pct: Double, power: Double) -> Double {
+        var b = pct
         let bottomHalf = b < 0.5
         b -= 0.5
         b = abs(b)

@@ -20,8 +20,8 @@ class Camera {
     static var shakeDropoff = true
     static let maxShakeDistance = 0.07
     
-    static var cameraLockonSpeed = 9990.0
-    static var cameraZoomSpeed = 10.0
+    static var cameraLockonSpeed = 9999.0
+    static var cameraZoomSpeed = 9999.0
     
     static var currentX = -9999.0
     static var currentY = -9999.0
@@ -77,6 +77,11 @@ class Camera {
     class func centerOnPlayer() {
         targetX = -((Double((EntityManager.getPlayer() as! Player).getCenter().x) + 0.0) * Double(Board.blockSize))
         targetY = ((Double((EntityManager.getPlayer() as! Player).getCenter().y) - 0.0) * Double(Board.blockSize))
+    }
+    
+    class func centerOnPoint(_ p: CGPoint) {
+        targetX = Double(p.x)
+        targetY = Double(p.y)
     }
     
     class func centerOnEditorCamera() {

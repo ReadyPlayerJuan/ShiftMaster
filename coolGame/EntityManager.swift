@@ -19,7 +19,7 @@ class EntityManager {
     
     static func addEntity(entity: Entity) {
         entities.append(entity)
-        entity.update(delta: 0.0, actions: [])
+        entity.update(delta: 0.0)
     }
     
     static func addParticle(particle: Particle) {
@@ -28,7 +28,7 @@ class EntityManager {
         
     }
     
-    static func updateEntities(delta: TimeInterval, actions: [GameAction]) {
+    static func updateEntities(delta: TimeInterval) {
         if let p = (EntityManager.getPlayer()) {
             let vel = hypot(p.xVel, p.yVel)
             if(vel > 1) {
@@ -47,14 +47,14 @@ class EntityManager {
         for _ in 0...collisionIterations-1 {
             for e in entities {
                 if(e.isDynamic) {
-                    e.update(delta: delta / Double(collisionIterations), actions: actions)
+                    e.update(delta: delta / Double(collisionIterations))
                 }
             }
             checkForCollision()
         }
         for e in entities {
             if(!e.isDynamic) {
-                e.update(delta: delta, actions: actions)
+                e.update(delta: delta)
             }
         }
         
@@ -104,12 +104,6 @@ class EntityManager {
     static func gameActionLastFrame(_ action: GameAction) {
         for e in entities {
             e.gameActionLastFrame(action)
-        }
-    }
-    
-    static func updateEntitySprites() {
-        for e in entities {
-            //e.updateSprite()
         }
     }
     
