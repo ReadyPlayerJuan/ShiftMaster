@@ -124,15 +124,21 @@ class Player: Entity {
             sprite.zRotation = 0
             super.gameActionFirstFrame(action)
             break
+        case .rotateLeftInstant:
+            super.gameActionFirstFrame(action)
+            break
+        case .rotateRightInstant:
+            super.gameActionFirstFrame(action)
+            break
         case .changingColor:
-            sprite.shader = PlayerShaders.getRandomColorChangeShader()
+            (sprite as! SKSpriteNode).shader = PlayerShaders.getRandomColorChangeShader()
             let color = ColorTheme.getColor(colorIndex: newColorIndex, colorVariation: false).cgColor
             let components: [Float] = [Float(color.components![0]), Float(color.components![1]), Float(color.components![2]), 1]
-            sprite.setValue(SKAttributeValue(vectorFloat4: vector_float4(components)), forAttribute: "a_new_color")
+            (sprite as! SKSpriteNode).setValue(SKAttributeValue(vectorFloat4: vector_float4(components)), forAttribute: "a_new_color")
             break
         case .endingStage:
-            sprite.shader = PlayerShaders.getRandomColorChangeShader()
-            sprite.setValue(SKAttributeValue(vectorFloat4: vector_float4([0, 0, 0, 0])), forAttribute: "a_new_color")
+            (sprite as! SKSpriteNode).shader = PlayerShaders.getRandomColorChangeShader()
+            (sprite as! SKSpriteNode).setValue(SKAttributeValue(vectorFloat4: vector_float4([0, 0, 0, 0])), forAttribute: "a_new_color")
             break
         case .respawningPlayer:
             deathParticleColor = defaultSpriteColor.copy() as! UIColor
@@ -155,7 +161,7 @@ class Player: Entity {
             //hinging = false
             break
         case .changingColor:
-            sprite.shader = PlayerShaders.defaultShader
+            (sprite as! SKSpriteNode).shader = PlayerShaders.defaultShader
             //sprite.setValue(SKAttributeValue(float: 0), forAttribute: "a_time_passed")
             
             colorIndex = newColorIndex
@@ -169,7 +175,7 @@ class Player: Entity {
             collidesWithType.append(colorIndex+10)
             break
         case .endingStage:
-            sprite.shader = PlayerShaders.defaultShader
+            (sprite as! SKSpriteNode).shader = PlayerShaders.defaultShader
             //sprite.setValue(SKAttributeValue(float: 0), forAttribute: "a_time_passed")
             
             sprite.alpha = 0
@@ -201,16 +207,16 @@ class Player: Entity {
     }
     
     override func updateAttributes() {
-        sprite.setValue(SKAttributeValue(vectorFloat2: vector_float2(Float(x), Float(y))), forAttribute: "a_player_position")
+        (sprite as! SKSpriteNode).setValue(SKAttributeValue(vectorFloat2: vector_float2(Float(x), Float(y))), forAttribute: "a_player_position")
         
         if(GameState.currentActions.count > 0) {
             for i in 0...GameState.currentActions.count-1 {
                 switch(GameState.currentActions[i].gameAction) {
                 case .changingColor:
-                    sprite.setValue(SKAttributeValue(float: Float(GameState.currentActionPercents[i])), forAttribute: "a_time_passed")
+                    (sprite as! SKSpriteNode).setValue(SKAttributeValue(float: Float(GameState.currentActionPercents[i])), forAttribute: "a_time_passed")
                     break
                 case .endingStage:
-                    sprite.setValue(SKAttributeValue(float: Float(GameState.currentActionPercents[i])), forAttribute: "a_time_passed")
+                    (sprite as! SKSpriteNode).setValue(SKAttributeValue(float: Float(GameState.currentActionPercents[i])), forAttribute: "a_time_passed")
                     break
                 default:
                     break

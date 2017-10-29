@@ -10,7 +10,6 @@ import Foundation
 import SpriteKit
 
 class ExitBlock: Entity {
-    var colorIndex: Int = 0
     var direction: Int = 0
     var disabled: Bool = false
     
@@ -34,16 +33,38 @@ class ExitBlock: Entity {
         load()
     }
     
+    init(x: Int, y: Int, direction: Int, invertVisible: Bool) {
+        super.init()
+        
+        self.x = Double(x)
+        self.y = Double(y)
+        self.direction = direction
+        self.invertExclusive = true
+        self.invertVisible = invertVisible
+        
+        isDynamic = false
+        collisionType = -1
+        collisionPriority = 99
+        name = "exit block"
+        hitboxType = HitboxType.block
+        zPos = 3
+        
+        defaultSpriteColor = ColorTheme.getGrayscaleColor(black: false, colorVariation: false)
+        shader = BlockShaders.triangleBlockShader
+        
+        load()
+    }
+    
     func disable() {
         disabled = true
     }
     
     override func update(delta: TimeInterval) {
-        super.update(delta: delta)
+        //super.update(delta: delta)
     }
     
     override func updateAttributes() {
-        sprite.setValue(SKAttributeValue(float: Float(direction)), forAttribute: "a_direction")
+        (sprite as! SKSpriteNode).setValue(SKAttributeValue(float: Float(direction)), forAttribute: "a_direction")
         
         if(!disabled) {
             let cycle = 1.0
@@ -65,21 +86,17 @@ class ExitBlock: Entity {
     }
     
     override func gameActionFirstFrame(_ action: GameAction) {
-        switch(action) {
-        case .rotateLeft:
-            super.gameActionFirstFrame(action)
-            break
-        case .rotateRight:
-            super.gameActionFirstFrame(action)
-            break
-        default:
-            break
-        }
+        super.gameActionFirstFrame(action)
     }
     
     override func load() {
+        
+        print("loaded exit")
         sprite = SKSpriteNode.init(color: defaultSpriteColor, size: CGSize.init(width: Board.blockSize, height: Board.blockSize))
-        sprite.shader = shader
+        (sprite as! SKSpriteNode).shader = shader
+        if(!GameState.shadersEnabledDebug) {
+            (sprite as! SKSpriteNode).shader = nil
+        }
         
         sprite.zPosition = zPos
         sprite.position = CGPoint(x: x * Board.blockSize, y: -y * Board.blockSize)

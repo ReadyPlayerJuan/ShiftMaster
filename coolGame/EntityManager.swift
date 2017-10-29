@@ -22,6 +22,15 @@ class EntityManager {
         entity.update(delta: 0.0)
     }
     
+    static func removeEntity(entity: Entity) {
+        for i in 0...entities.count-1 {
+            if(entities[i].ID == entity.ID) {
+                entities.remove(at: i)
+                return
+            }
+        }
+    }
+    
     static func addParticle(particle: Particle) {
         particles.append(particle)
         GameState.drawNode.addChild(particle.sprite)
@@ -29,13 +38,13 @@ class EntityManager {
     }
     
     static func updateEntities(delta: TimeInterval) {
-        if let p = (EntityManager.getPlayer()) {
+        /*if let p = (EntityManager.getPlayer()) {
             let vel = hypot(p.xVel, p.yVel)
             if(vel > 1) {
                 collisionIterations = Int(vel)+3
             }
-        }
-        
+        }*/
+        collisionIterations = 3
         
         
         for e in entities {
@@ -72,6 +81,10 @@ class EntityManager {
             }
         }
         
+        updateEntityAttributes()
+    }
+    
+    static func updateEntityAttributes() {
         for e in entities {
             e.updateAttributes()
         }
@@ -157,7 +170,7 @@ class EntityManager {
         var temp = [Entity]()
         
         for e in entities {
-            if(hypot(e.x - entity.x, e.y - entity.y) <= radius
+            if(!e.isInactive && hypot(e.x - entity.x, e.y - entity.y) <= radius
                     && e.ID != entity.ID && entity.collisionPriority <= e.collisionPriority) {
                 temp.append(e)
             }

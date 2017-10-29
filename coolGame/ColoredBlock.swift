@@ -32,6 +32,28 @@ class ColoredBlock: Entity {
         load()
     }
     
+    init(x: Int, y: Int, colorIndex: Int, invertVisible: Bool) {
+        super.init()
+        
+        self.colorIndex = colorIndex
+        self.x = Double(x)
+        self.y = Double(y)
+        self.invertExclusive = true
+        self.invertVisible = invertVisible
+        
+        isDynamic = false
+        collisionType = colorIndex + 10
+        collisionPriority = 99
+        name = "colored block"
+        hitboxType = HitboxType.block
+        zPos = 1
+        
+        defaultSpriteColor = ColorTheme.getColor(colorIndex: colorIndex, colorVariation: true)
+        shader = BlockShaders.defaultBlockShader
+        
+        load()
+    }
+    
     override func update(delta: TimeInterval) {
         super.update(delta: delta)
     }
@@ -41,21 +63,15 @@ class ColoredBlock: Entity {
     }
     
     override func gameActionFirstFrame(_ action: GameAction) {
-        switch(action) {
-        case .rotateLeft:
-            super.gameActionFirstFrame(action)
-            break
-        case .rotateRight:
-            super.gameActionFirstFrame(action)
-            break
-        default:
-            break
-        }
+        super.gameActionFirstFrame(action)
     }
     
     override func load() {
         sprite = SKSpriteNode.init(color: defaultSpriteColor, size: CGSize.init(width: Board.blockSize, height: Board.blockSize))
-        sprite.shader = shader
+        (sprite as! SKSpriteNode).shader = shader
+        if(!GameState.shadersEnabledDebug) {
+            (sprite as! SKSpriteNode).shader = nil
+        }
         
         sprite.zPosition = zPos
         sprite.position = CGPoint(x: x * Board.blockSize, y: -y * Board.blockSize)

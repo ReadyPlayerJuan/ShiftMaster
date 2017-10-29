@@ -16,6 +16,7 @@ class EditorScene: SKScene {
     var rotateNode: SKNode!
     var superNode: SKNode!
     var editorNode: SKNode!
+    var inputNode: SKNode!
     
     static let screenHeight = UIScreen.main.fixedCoordinateSpace.bounds.width
     static let screenWidth = UIScreen.main.fixedCoordinateSpace.bounds.height
@@ -28,37 +29,26 @@ class EditorScene: SKScene {
     
     override func didMove(to view: SKView) {
         mainView = view
+        if(GameState.allActions.count == 0) {
+            GameState.initGameActions()
+        }
+        ShadersMaster.initShaders()
         beginGame()
-        
-        //UIPasteboard.general.string = "Hello world"
     }
     
     func beginGame() {
         backgroundColor = Board.backgroundColor
         
-        //configure main layer
-        /*
-         rotateLayer = CALayer()
-         drawLayer = CALayer()
-         
-         rotateLayer.anchorPoint = CGPoint(x: 0.5, y: 0.5)
-         rotateLayer.position = CGPoint(x: GameScene.screenWidth/2.0, y: GameScene.screenHeight/2.0)
-         rotateLayer.bounds = CGRect(x: 0.0, y: 0.0, width: GameScene.screenWidth, height: GameScene.screenHeight)
-         mainView.layer.addSublayer(rotateLayer)
-         
-         rotateLayer.addSublayer(drawLayer)
-         
-         GameState.gamescene = self
-         GameState.drawLayer = drawLayer
-         GameState.rotateLayer = rotateLayer*/
-        
         GameState.editorscene = self
-        //EditorManager.editorScene = self
+        EditorManager.editorScene = self
         
         superNode = SKNode.init()
         drawNode = SKNode.init()
         rotateNode = SKNode.init()
         editorNode = SKNode.init()
+        editorNode.zPosition = 0//600
+        inputNode = SKNode.init()
+        inputNode.zPosition = 500
         
         removeAllChildren()
         addChild(superNode)
@@ -66,13 +56,23 @@ class EditorScene: SKScene {
         superNode.addChild(editorNode)
         rotateNode.addChild(drawNode)
         
-        //EditorManager.drawNode = editorNode
+        /*var prev: SKNode = superNode
+        for i in 0...100 {
+            let a = SKSpriteNode.init(color: UIColor.red, size: CGSize(width: 100, height: 100))
+            a.position.x = CGFloat(i)
+            prev.addChild(a)
+            prev = a
+        }*/
+        
+        EditorManager.drawNode = editorNode
         
         GameState.drawNode = drawNode
         GameState.rotateNode = rotateNode
         GameState.superNode = superNode
+        GameState.inputNode = inputNode
         
-        InputController.inputButtonNode = superNode
+        InputController.inputButtonNode = inputNode
+        superNode.addChild(inputNode)
         InputController.initElements()
         
         Camera.drawNode = drawNode
@@ -89,8 +89,13 @@ class EditorScene: SKScene {
             Memory.saveStageEdit(code: Stage.defaultStage)
         }
         
+        GameState.beginGame()
+        EditorManager.initElements()
         GameState.ignoreDelta = true
-        //GameState.gameAction(type: "begin editor")
+        GameState.update(delta: 0)
+        GameState.ignoreDelta = true
+        
+        GameState.gameAction(GameAction.editing)
     }
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {

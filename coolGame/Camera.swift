@@ -75,8 +75,10 @@ class Camera {
     }
  
     class func centerOnPlayer() {
-        targetX = -((Double((EntityManager.getPlayer() as! Player).getCenter().x) + 0.0) * Double(Board.blockSize))
-        targetY = ((Double((EntityManager.getPlayer() as! Player).getCenter().y) - 0.0) * Double(Board.blockSize))
+        if(EntityManager.getPlayer() != nil) {
+            targetX = -((Double((EntityManager.getPlayer() as! Player).getCenter().x) + 0.0) * Double(Board.blockSize))
+            targetY = ((Double((EntityManager.getPlayer() as! Player).getCenter().y) - 0.0) * Double(Board.blockSize))
+        }
     }
     
     class func centerOnPoint(_ p: CGPoint) {
@@ -85,8 +87,9 @@ class Camera {
     }
     
     class func centerOnEditorCamera() {
-        //targetX = -Double((EditorManager.camera.x + 0.5) * CGFloat(Board.blockSize))
-        //targetY = Double((EditorManager.camera.y - 0.5) * CGFloat(Board.blockSize))
+        targetX = -Double((EditorManager.camera.x + 0.0) * CGFloat(Board.blockSize))
+        targetY = Double((EditorManager.camera.y - 0.0) * CGFloat(Board.blockSize))
+        targetZoom = EditorManager.cameraZoom
     }
     
     class func centerOnDeathVector() {

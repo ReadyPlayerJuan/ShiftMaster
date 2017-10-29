@@ -32,6 +32,28 @@ class InvertBlock: Entity {
         load()
     }
     
+    init(x: Int, y: Int, direction: Int, invertVisible: Bool) {
+        super.init()
+        
+        self.x = Double(x)
+        self.y = Double(y)
+        self.direction = direction
+        self.invertExclusive = true
+        self.invertVisible = invertVisible
+        
+        isDynamic = false
+        collisionType = -1
+        collisionPriority = 99
+        name = "invert block"
+        hitboxType = HitboxType.block
+        zPos = 3
+        
+        defaultSpriteColor = UIColor.purple
+        shader = BlockShaders.colorfulTriangleShader
+        
+        load()
+    }
+    
     override func update(delta: TimeInterval) {
         super.update(delta: delta)
     }
@@ -65,26 +87,20 @@ class InvertBlock: Entity {
         var b = (Double(1-colorProgression) * (Double(ColorTheme.colors[Board.colorTheme][currentColor][2])/255.0))
         b += (Double(colorProgression) * (Double(ColorTheme.colors[Board.colorTheme][nextColor][2])/255.0))
         
-        sprite.setValue(SKAttributeValue(vectorFloat4: vector_float4([Float(r), Float(g), Float(b), 1])), forAttribute: "a_color")
-        sprite.setValue(SKAttributeValue(float: Float(direction)), forAttribute: "a_direction")
+        (sprite as! SKSpriteNode).setValue(SKAttributeValue(vectorFloat4: vector_float4([Float(r), Float(g), Float(b), 1])), forAttribute: "a_color")
+        (sprite as! SKSpriteNode).setValue(SKAttributeValue(float: Float(direction)), forAttribute: "a_direction")
     }
     
     override func gameActionFirstFrame(_ action: GameAction) {
-        switch(action) {
-        case .rotateLeft:
-            super.gameActionFirstFrame(action)
-            break
-        case .rotateRight:
-            super.gameActionFirstFrame(action)
-            break
-        default:
-            break
-        }
+        super.gameActionFirstFrame(action)
     }
     
     override func load() {
         sprite = SKSpriteNode.init(color: defaultSpriteColor, size: CGSize.init(width: Board.blockSize, height: Board.blockSize))
-        sprite.shader = shader
+        (sprite as! SKSpriteNode).shader = shader
+        if(!GameState.shadersEnabledDebug) {
+            (sprite as! SKSpriteNode).shader = nil
+        }
         
         sprite.zPosition = zPos
         sprite.position = CGPoint(x: x * Board.blockSize, y: -y * Board.blockSize)

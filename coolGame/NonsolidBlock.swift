@@ -29,6 +29,27 @@ class NonsolidBlock: Entity {
         load()
     }
     
+    init(x: Int, y: Int, invertVisible: Bool) {
+        super.init()
+        
+        self.x = Double(x)
+        self.y = Double(y)
+        self.invertExclusive = true
+        self.invertVisible = invertVisible
+        
+        isDynamic = false
+        collisionType = -1
+        collisionPriority = 99
+        name = "nonsolid block"
+        hitboxType = HitboxType.block
+        zPos = 1
+        
+        defaultSpriteColor = ColorTheme.getGrayscaleColor(black: true, colorVariation: true)
+        shader = BlockShaders.defaultBlockShader
+        
+        load()
+    }
+    
     override func update(delta: TimeInterval) {
         super.update(delta: delta)
     }
@@ -38,21 +59,12 @@ class NonsolidBlock: Entity {
     }
     
     override func gameActionFirstFrame(_ action: GameAction) {
-        switch(action) {
-        case .rotateLeft:
-            super.gameActionFirstFrame(action)
-            break
-        case .rotateRight:
-            super.gameActionFirstFrame(action)
-            break
-        default:
-            break
-        }
+        super.gameActionFirstFrame(action)
     }
     
     override func load() {
         sprite = SKSpriteNode.init(color: defaultSpriteColor, size: CGSize.init(width: Board.blockSize, height: Board.blockSize))
-        sprite.shader = shader
+        (sprite as! SKSpriteNode).shader = shader
         
         sprite.zPosition = zPos
         sprite.position = CGPoint(x: x * Board.blockSize, y: -y * Board.blockSize)

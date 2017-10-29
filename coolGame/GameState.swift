@@ -29,9 +29,15 @@ enum GameAction: Int {
     case changingColor = 5
     case endingStage = 6
     case respawningPlayer = 7
+    case inverting = 8
+    case editing = 9
+    case rotateLeftInstant = 10
+    case rotateRightInstant = 11
 }
 
 class GameState {
+    static let shadersEnabledDebug = true
+    
     static let screenHeight = UIScreen.main.fixedCoordinateSpace.bounds.width
     static let screenWidth = UIScreen.main.bounds.width
     
@@ -41,6 +47,7 @@ class GameState {
     static var superNode: SKNode!
     static var drawNode: SKNode!
     static var rotateNode: SKNode!
+    static var inputNode: SKNode!
     
     static var allActions: [Action] = []
     static var currentActions: [Action] = []
@@ -52,6 +59,7 @@ class GameState {
     
     static var maxDeathRotation = 0.0
     static var stageTransitionAngle = 0.0
+    static var inverted = false
     
     /*static var prevState = "in menu"
     static var prevPlayerState =  "free"
@@ -163,7 +171,11 @@ class GameState {
             Action(ID: 4, length: 6.0, gameAction: GameAction.stageTransitionOut, stopPlayerMovement: true, subGameActions: [GameAction.stageTransitionIn], subGameActionStarts: [1]),
             Action(ID: 5, length: 1.5, gameAction: GameAction.changingColor, stopPlayerMovement: true, subGameActions: [], subGameActionStarts: []),
             Action(ID: 6, length: 1.5, gameAction: GameAction.endingStage, stopPlayerMovement: true, subGameActions: [GameAction.stageTransitionOut], subGameActionStarts: [1]),
-            Action(ID: 7, length: 3.0, gameAction: GameAction.respawningPlayer, stopPlayerMovement: true, subGameActions: [], subGameActionStarts: [])
+            Action(ID: 7, length: 3.0, gameAction: GameAction.respawningPlayer, stopPlayerMovement: true, subGameActions: [], subGameActionStarts: []),
+            Action(ID: 8, length: 1.2, gameAction: GameAction.inverting, stopPlayerMovement: true, subGameActions: [], subGameActionStarts: []),
+            Action(ID: 9, length: 99999.0, gameAction: GameAction.editing, stopPlayerMovement: true, subGameActions: [GameAction.editing], subGameActionStarts: [1]),
+            Action(ID: 10, length: 0, gameAction: GameAction.rotateLeftInstant, stopPlayerMovement: false, subGameActions: [], subGameActionStarts: []),
+            Action(ID: 11, length: 0, gameAction: GameAction.rotateRightInstant, stopPlayerMovement: false, subGameActions: [], subGameActionStarts: [])
         ]
     }
     
@@ -202,7 +214,6 @@ class GameState {
             newActions.remove(at: 0)
         }
         
-        
         stopPlayerMovement = false
         
         var index = 0
@@ -239,22 +250,6 @@ class GameState {
         }
     }
     
-    class func initEntities() {
-        EntityManager.entities = []
-        
-        let p = Player.init()
-        EntityManager.addEntity(entity: p)
-        
-        for e in Board.entities {
-            EntityManager.addEntity(entity: e)
-        }
-        
-        (EntityManager.getPlayer()! as! Player).reset()
-        
-        EntityManager.sortEntities()
-        EntityManager.redrawEntities(node: drawNode, name: "all")
-    }
-    
     class func update(delta: TimeInterval) {
         currentDelta = delta
         if(ignoreDelta || delta > 1) {
@@ -281,8 +276,8 @@ class GameState {
                 currentActionPercents.append(currentActionTimers[i] / action.length)
             }
         }
-        EntityManager.updateEntities(delta: currentDelta)
         
+        EntityManager.updateEntities(delta: currentDelta)
         if(currentActions.count > 0) {
             for i in 0...currentActions.count-1 {
                 let action = currentActions[i]
@@ -356,6 +351,23 @@ class GameState {
                         rotateNode.zRotation = CGFloat(pow(pct2, 3.0) * 20)
                     }
                     break
+                case .inverting:
+                    ShadersMaster.updateInvertAnimation(timePassed: Float(currentActionPercents[i]))
+                    break
+                case .changingColor:
+                    var pct = currentActionPercents[i]
+                    if(pct > 0.5) {
+                        pct = 1 - pct
+                    }
+                    let time = 0.25
+                    var pct2 = min(1, pct / time)
+                    pct2 = skewToEdges(pct: pct2, power: 2)
+                    Camera.targetZoom = (pct2 * 0) + 1
+                    break
+                case .editing:
+                    EditorManager.update(delta: currentDelta)
+                    Camera.centerOnEditorCamera()
+                    rotateNode.zRotation = CGFloat(EditorManager.cameraRotation)
                 default:
                     Camera.centerOnPlayer()
                     break
@@ -364,6 +376,7 @@ class GameState {
         } else {
             Camera.centerOnPlayer()
         }
+        ShadersMaster.updateHazardBlockAnimation()
         
         Camera.update(delta: delta)
         InputController.prevTouches = InputController.currentTouches
@@ -373,11 +386,11 @@ class GameState {
         switch(action) {
         case .rotateLeft:
             Board.rotateLeft()
-            BlockShaders.updateDirection()
+            ShadersMaster.updateDirection()
             break
         case .rotateRight:
             Board.rotateRight()
-            BlockShaders.updateDirection()
+            ShadersMaster.updateDirection()
             break
         case .respawningPlayer:
             switch(Board.direction) {
@@ -404,13 +417,30 @@ class GameState {
             default:
                 break
             }
-            BlockShaders.updateDirection()
+            ShadersMaster.updateDirection()
             break
         case .stageTransitionOut:
             stageTransitionAngle = rand() * 3.14159 * 2
             break
         case .stageTransitionIn:
             stageTransitionAngle = rand() * 3.14159 * 2
+            break
+        case .inverting:
+            gamescene.shader = PostShaders.invertCircleTransitionShader
+            ShadersMaster.updateInvertState(inverted: inverted)
+            break
+        case .editing:
+            inputNode.alpha = 0
+            break
+        case .rotateLeftInstant:
+            Board.rotateLeft()
+            ShadersMaster.updateDirection()
+            EditorManager.rotateLeft()
+            break
+        case .rotateRightInstant:
+            Board.rotateRight()
+            ShadersMaster.updateDirection()
+            EditorManager.rotateRight()
             break
         default:
             break
@@ -424,28 +454,29 @@ class GameState {
         case .stageTransitionOut:
             updateGameActions()
             Board.nextStage()
-            initEntities()
-            BlockShaders.updateDirection()
+            ShadersMaster.updateDirection()
             break
         case .stageTransitionIn:
             Camera.targetZoom = 1
             rotateNode.zRotation = 0
+            break
+        case .inverting:
+            gamescene.shader = PostShaders.invertShader
+            inverted = !inverted
+            ShadersMaster.updateInvertState(inverted: inverted)
+            Camera.targetZoom = 1
+            break
+        case .changingColor:
+            Camera.targetZoom = 1
             break
         default:
             break
         }
     }
     
-    class func initShaders() {
-        BlockShaders.initShaders()
-        PlayerShaders.initShaders()
-        PostShaders.initShaders()
-    }
-    
     class func beginGame() {
         Board.reset()
         Board.nextStage()
-        initEntities()
     }
     
     class func heightAt(time: Double) -> Double {

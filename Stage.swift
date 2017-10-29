@@ -99,13 +99,13 @@ class Stage {
         stage.append([1, 0, 0, 0, 0, 0, 0, 0, 0, 1])
         stage.append([1, 0, 0, 0, 1, 0, 0, 0, 0, 1])
         stage.append([1, 0, 0, 0, 0, 0, 0, 0, 0, 1])
-        stage.append([1, 0, 0, 0, 99,99,1, 1, 1, 1])
-        stage.append([1, 0, 0, 0, 0, 0, 0, 1,-31,1])
-        stage.append([1, 0, 0,019,0, 0, 0, 0, 0, 1])
+        stage.append([1, 0,99, 0, 99,99,1, 1, 1, 1])
+        stage.append([1, 0, 0, 0, 0, 0,99,99,-31,1])
+        stage.append([1, 0, 0,019,0, 0, 0,99, 0, 1])
         stage.append([1, 0, 0, 1, 0, 0, 0, 0, 0, 1])
         stage.append([1, 0, 0, 0, 0,013,0,014,0, 1])
         stage.append([1, 1, 1, 1, 1, 1, 1, 1, 1, 1])
-        let spawnPoint = CGPoint(x: 2, y: 5)
+        let spawnPoint = CGPoint(x: 1, y: 6)
         let exitTargets = [[8, 5, 0]]
         let otherEntities: [Entity] = [/*PlayerGhost.init(startX: 5.0, startY: 8.0, appearMode: 1, actions: [PlayerGhost.ghostActions.fadeIn, PlayerGhost.ghostActions.moveRight(3.0), PlayerGhost.ghostActions.hingeRight, PlayerGhost.ghostActions.moveRight(3.0), PlayerGhost.ghostActions.hingeRight, PlayerGhost.ghostActions.fadeOut, PlayerGhost.ghostActions.moveRight(2.0), PlayerGhost.ghostActions.wait(1.0)])*/] //, LightSource.init(xPos: 2, yPos: 8, onPlayer: true)
         

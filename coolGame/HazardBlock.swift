@@ -10,8 +10,19 @@ import Foundation
 import SpriteKit
 
 class HazardBlock: Entity {
+    let edgeSize = 0.0
+    
     var colorProgressionBase: Double = 0
     let hazardCycle: Double = 15.0
+    
+    var extendL = false
+    var extendR = false
+    var extendT = false
+    var extendB = false
+    var extendTL = false
+    var extendTR = false
+    var extendBL = false
+    var extendBR = false
     
     init(x: Int, y: Int) {
         super.init()
@@ -26,10 +37,32 @@ class HazardBlock: Entity {
         name = "hazard block"
         hitboxType = HitboxType.block
         isDangerous = true
-        zPos = 1
+        zPos = 5
         
         defaultSpriteColor = UIColor.purple
-        shader = BlockShaders.colorfulBlockShader
+        shader = BlockShaders.hazardBlockShader
+        
+        load()
+    }
+    
+    init(x: Int, y: Int, invertVisible: Bool) {
+        super.init()
+        
+        self.x = Double(x)
+        self.y = Double(y)
+        self.invertExclusive = true
+        self.invertVisible = invertVisible
+        
+        isDynamic = false
+        collisionType = 0
+        collisionPriority = 99
+        name = "hazard block"
+        hitboxType = HitboxType.block
+        isDangerous = true
+        zPos = 5
+        
+        defaultSpriteColor = UIColor.purple
+        shader = BlockShaders.hazardBlockShader
         
         load()
     }
@@ -39,51 +72,67 @@ class HazardBlock: Entity {
     }
     
     override func updateAttributes() {
-        var c = colorProgressionBase + (EntityManager.getPlayer()! as! Player).movementTotal + (GameState.time / (2 * hazardCycle))
-        
-        if(GameState.currentActions.count > 0) {
-            for i in 0...GameState.currentActions.count-1 {
-                if(GameState.currentActions[i].gameAction == GameAction.rotateLeft || GameState.currentActions[i].gameAction == GameAction.rotateRight) {
-                    let ang = GameState.skewToEdges(pct: GameState.currentActionPercents[i], power: 4)
-                    c += hazardCycle * (1-ang)
-                } else if(GameState.currentActions[i].gameAction == GameAction.respawningPlayer) {
-                    let ang = GameState.skewToEdges(pct: GameState.currentActionPercents[i], power: 4)
-                    c += hazardCycle * (1-ang) * abs(GameState.maxDeathRotation / (3.14159 / 2))
-                }
-            }
-        }
-        
-        let colorProgression = abs((remainder(c, hazardCycle) + (hazardCycle/2.0)) / hazardCycle) + (GameState.time / (2 * hazardCycle))
-        
-        var r = remainder(colorProgression + 0.0, 1.0) + 0.5
-        var g = remainder(colorProgression + 0.333, 1.0) + 0.5
-        var b = remainder(colorProgression + 0.666, 1.0) + 0.5
-        r = abs((r * 2) - 1)
-        g = abs((g * 2) - 1)
-        b = abs((b * 2) - 1)
-        
-        let flickerTogether = true || false
-        var rand = 0.0
-        if(!flickerTogether) {
-            rand = self.rand()
-        } else {
-            rand = GameState.globalRand
-        }
-        let flicker = (1 * (pow(rand * 0.9, 4) - 0.5) / 2) + 0.2
-        r = min(1.0, max(0.0, r + flicker))
-        g = min(1.0, max(0.0, g + flicker))
-        b = min(1.0, max(0.0, b + flicker))
-        
-        sprite.setValue(SKAttributeValue(vectorFloat4: vector_float4([Float(r), Float(g), Float(b), 1])), forAttribute: "a_color")
+        (sprite as! SKSpriteNode).setValue(SKAttributeValue(float: (extendL) ? 1:0), forAttribute: "a_extendL")
+        (sprite as! SKSpriteNode).setValue(SKAttributeValue(float: (extendR) ? 1:0), forAttribute: "a_extendR")
+        (sprite as! SKSpriteNode).setValue(SKAttributeValue(float: (extendT) ? 1:0), forAttribute: "a_extendT")
+        (sprite as! SKSpriteNode).setValue(SKAttributeValue(float: (extendB) ? 1:0), forAttribute: "a_extendB")
+        (sprite as! SKSpriteNode).setValue(SKAttributeValue(float: (extendTL) ? 1:0), forAttribute: "a_extendTL")
+        (sprite as! SKSpriteNode).setValue(SKAttributeValue(float: (extendTR) ? 1:0), forAttribute: "a_extendTR")
+        (sprite as! SKSpriteNode).setValue(SKAttributeValue(float: (extendBL) ? 1:0), forAttribute: "a_extendBL")
+        (sprite as! SKSpriteNode).setValue(SKAttributeValue(float: (extendBR) ? 1:0), forAttribute: "a_extendBR")
     }
     
     override func gameActionFirstFrame(_ action: GameAction) {
+        super.gameActionFirstFrame(action)
+        
         switch(action) {
         case .rotateLeft:
-            super.gameActionFirstFrame(action)
+            let temp = extendT
+            extendT = extendR
+            extendR = extendB
+            extendB = extendL
+            extendL = temp
+            let temp2 = extendTL
+            extendTL = extendTR
+            extendTR = extendBR
+            extendBR = extendBL
+            extendBL = temp2
             break
         case .rotateRight:
-            super.gameActionFirstFrame(action)
+            let temp = extendT
+            extendT = extendL
+            extendL = extendB
+            extendB = extendR
+            extendR = temp
+            let temp2 = extendTL
+            extendTL = extendBL
+            extendBL = extendBR
+            extendBR = extendTR
+            extendTR = temp2
+            break
+        case .rotateLeftInstant:
+            let temp = extendT
+            extendT = extendR
+            extendR = extendB
+            extendB = extendL
+            extendL = temp
+            let temp2 = extendTL
+            extendTL = extendTR
+            extendTR = extendBR
+            extendBR = extendBL
+            extendBL = temp2
+            break
+        case .rotateRightInstant:
+            let temp = extendT
+            extendT = extendL
+            extendL = extendB
+            extendB = extendR
+            extendR = temp
+            let temp2 = extendTL
+            extendTL = extendBL
+            extendBL = extendBR
+            extendBR = extendTR
+            extendTR = temp2
             break
         default:
             break
@@ -91,8 +140,11 @@ class HazardBlock: Entity {
     }
     
     override func load() {
-        sprite = SKSpriteNode.init(color: defaultSpriteColor, size: CGSize.init(width: Board.blockSize, height: Board.blockSize))
-        sprite.shader = shader
+        sprite = SKSpriteNode.init(color: defaultSpriteColor, size: CGSize.init(width: Board.blockSize * (1 + (edgeSize * 2)), height: Board.blockSize * (1 + (edgeSize * 2))))
+        (sprite as! SKSpriteNode).shader = shader
+        if(!GameState.shadersEnabledDebug) {
+            (sprite as! SKSpriteNode).shader = nil
+        }
         
         sprite.zPosition = zPos
         sprite.position = CGPoint(x: x * Board.blockSize, y: -y * Board.blockSize)

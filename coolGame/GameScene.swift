@@ -14,6 +14,7 @@ class GameScene: SKScene {
     var drawNode: SKNode!
     var rotateNode: SKNode!
     var superNode: SKNode!
+    var inputNode: SKNode!
     
     static let screenHeight = UIScreen.main.fixedCoordinateSpace.bounds.width
     static let screenWidth = UIScreen.main.fixedCoordinateSpace.bounds.height
@@ -29,7 +30,7 @@ class GameScene: SKScene {
         if(GameState.allActions.count == 0) {
             GameState.initGameActions()
         }
-        GameState.initShaders()
+        ShadersMaster.initShaders()
         beginGame()
     }
     
@@ -42,8 +43,10 @@ class GameScene: SKScene {
         superNode = SKNode.init()
         drawNode = SKNode.init()
         rotateNode = SKNode.init()
+        inputNode = SKNode.init()
+        inputNode.zPosition = 500
         
-        self.shader = PostShaders.defaultShader
+        self.shader = PostShaders.invertShader
         self.shouldEnableEffects = true
         
         addChild(superNode)
@@ -53,8 +56,10 @@ class GameScene: SKScene {
         GameState.drawNode = drawNode
         GameState.rotateNode = rotateNode
         GameState.superNode = superNode
+        GameState.inputNode = inputNode
         
-        InputController.inputButtonNode = superNode
+        InputController.inputButtonNode = inputNode
+        superNode.addChild(inputNode)
         InputController.initElements()
         
         Camera.drawNode = drawNode

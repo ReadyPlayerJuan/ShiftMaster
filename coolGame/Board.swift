@@ -100,6 +100,7 @@ class Board {
                     entities.append(ColoredBlock.init(x: col, y: row, colorIndex: temp[row][col]-2))
                     //blocks[row][col] = Block.init(blockType: 2, color: temp[row][col]-2, secondaryColor: -1, dir: -1, x: Double(col), y: Double(row))
                 } else if(temp[row][col] == 99) {
+                    entities.append(NonsolidBlock.init(x: col, y: row))
                     entities.append(HazardBlock.init(x: col, y: row))
                     //blocks[row][col] = Block.init(blockType: 6, color: -1, secondaryColor: -1, dir: -1, x: Double(col), y: Double(row))
                 } else if(temp[row][col] >= 10) {
@@ -124,17 +125,75 @@ class Board {
                     entities.append(NonsolidBlock.init(x: col, y: row))
                     let direction = (abs(temp[row][col])/10)-1
                     entities.append(ExitBlock.init(x: col, y: row, direction: direction))
-                    
-                    /*if(direction >= 4) {
-                        blocks[row][col] = Block.init(blockType: 9, color: (abs(temp[row][col])%10), secondaryColor: -1, dir: direction%4, x: Double(col), y: Double(row))
-                    } else {
-                        blocks[row][col] = Block.init(blockType: 4, color: (abs(temp[row][col])%10)-2, secondaryColor: -1, dir: direction, x: Double(col), y: Double(row))
-                        for coords in (currentStage?.exitTargets)! {
-                            if(col == coords[0] && row == coords[1]) {
-                                blocks[row][col]?.exitTarget = coords[2]
-                            }
+                }
+            }
+        }
+        
+        initEntities()
+        loadHazardBlockData()
+    }
+    
+    class func initEntities() {
+        EntityManager.entities = []
+        
+        let p = Player.init()
+        EntityManager.addEntity(entity: p)
+        
+        for e in entities {
+            EntityManager.addEntity(entity: e)
+        }
+        
+        (EntityManager.getPlayer()! as! Player).reset()
+        
+        EntityManager.sortEntities()
+        EntityManager.redrawEntities(node: GameState.drawNode, name: "all")
+    }
+    
+    class func loadHazardBlockData() {
+        for entity in EntityManager.entities {
+            if(entity.name == "hazard block") {
+                (entity as! HazardBlock).extendR = false
+                (entity as! HazardBlock).extendL = false
+                (entity as! HazardBlock).extendT = false
+                (entity as! HazardBlock).extendB = false
+                (entity as! HazardBlock).extendBR = false
+                (entity as! HazardBlock).extendBL = false
+                (entity as! HazardBlock).extendTR = false
+                (entity as! HazardBlock).extendTL = false
+            }
+        }
+        for entity in EntityManager.entities {
+            if(entity.name == "hazard block") {
+                for entity2 in EntityManager.entities {
+                    if(entity2.name == "hazard block") {
+                        if(entity2.x == entity.x + 1 && entity2.y == entity.y) {
+                            (entity as! HazardBlock).extendR = true
+                        } else if(entity2.x == entity.x - 1 && entity2.y == entity.y) {
+                            (entity as! HazardBlock).extendL = true
+                        } else if(entity2.x == entity.x && entity2.y == entity.y + 1) {
+                            (entity as! HazardBlock).extendB = true
+                        } else if(entity2.x == entity.x && entity2.y == entity.y - 1) {
+                            (entity as! HazardBlock).extendT = true
                         }
-                    }*/
+                    }
+                }
+            }
+        }
+        for e in EntityManager.entities {
+            if(e.name == "hazard block") {
+                let entity = e as! HazardBlock
+                for entity2 in EntityManager.entities {
+                    if(entity2.name == "hazard block") {
+                        if(entity.extendR && entity.extendB && entity2.x == entity.x + 1 && entity2.y == entity.y + 1) {
+                            entity.extendBR = true
+                        } else if(entity.extendL && entity.extendB && entity2.x == entity.x - 1 && entity2.y == entity.y + 1) {
+                            entity.extendBL = true
+                        } else if(entity.extendR && entity.extendT && entity2.x == entity.x + 1 && entity2.y == entity.y - 1) {
+                            entity.extendTR = true
+                        } else if(entity.extendL && entity.extendT && entity2.x == entity.x - 1 && entity2.y == entity.y - 1) {
+                            entity.extendTL = true
+                        }
+                    }
                 }
             }
         }

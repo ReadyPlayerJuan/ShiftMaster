@@ -39,7 +39,7 @@ class MenuViewController: UIViewController, AVAudioPlayerDelegate {
             view.shouldCullNonVisibleNodes = true
         }
         
-        goToScene("game")
+        //goToScene("game")
     }
     
     func goToScene(_ name: String) {

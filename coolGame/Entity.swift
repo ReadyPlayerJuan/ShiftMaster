@@ -18,6 +18,10 @@ class Entity {
     var isDangerous = false
     var autoRotate = true
     
+    var isInactive = false
+    var invertExclusive: Bool = false
+    var invertVisible: Bool = false
+    
     var name = ""
     var hitboxType = HitboxType.none
     
@@ -38,7 +42,7 @@ class Entity {
     var nearbyEntities: [Entity] = []
     
     var defaultSpriteColor: UIColor = UIColor.purple
-    var sprite: SKSpriteNode!
+    var sprite: SKNode!
     var shader: SKShader!
     
     init() {
@@ -48,6 +52,14 @@ class Entity {
     func update(delta: TimeInterval) {
         nextX = x + xVel
         nextY = y + yVel
+        
+        if(invertExclusive && ((GameState.inverted && !invertVisible) || (!GameState.inverted && invertVisible))) {
+            sprite.alpha = 0.0
+            isInactive = true
+        } else {
+            sprite.alpha = 1.0
+            isInactive = false
+        }
     }
     func checkForCollision() {}
     func move() {
@@ -70,6 +82,24 @@ class Entity {
             sprite.position = CGPoint(x: x * Board.blockSize, y: -y * Board.blockSize)
             break
         case .rotateRight:
+            let newX = Double(Board.boardWidth) - y - 1
+            let newY = x
+            nextX = newX
+            nextY = newY
+            x = nextX
+            y = nextY
+            sprite.position = CGPoint(x: x * Board.blockSize, y: -y * Board.blockSize)
+            break
+        case .rotateLeftInstant:
+            let newX = y
+            let newY = Double(Board.boardHeight) - x - 1
+            nextX = newX
+            nextY = newY
+            x = nextX
+            y = nextY
+            sprite.position = CGPoint(x: x * Board.blockSize, y: -y * Board.blockSize)
+            break
+        case .rotateRightInstant:
             let newX = Double(Board.boardWidth) - y - 1
             let newY = x
             nextX = newX

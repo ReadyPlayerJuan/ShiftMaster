@@ -352,16 +352,25 @@ extension Player {
                             }
                         } else if(entity.name == "exit block" && Board.direction == (entity as! ExitBlock).direction) {
                             if(nextY == Double(Int(nextY)) && ((x - colAcc <= entity.x && nextX + colAcc >= entity.x) || (x + colAcc >= entity.x && nextX - colAcc <= entity.x)) && ((y <= entity.y && nextY >= entity.y) || (y >= entity.y && nextY <= entity.y))) {
-                                if((entity as! ExitBlock).colorIndex != colorIndex) {
+                                nextX = entity.nextX
+                                xVel = 0
+                                horizontalMovementTimer = 0
+                                
+                                newColorIndex = -2
+                                
+                                (entity as! ExitBlock).disable()
+                                GameState.stopPlayerMovement = true
+                                GameState.gameAction(GameAction.endingStage)
+                            }
+                        } else if(entity.name == "invert block" && Board.direction == (entity as! InvertBlock).direction) {
+                            if(nextY == Double(Int(nextY)) && ((x - colAcc <= entity.x && nextX + colAcc >= entity.x) || (x + colAcc >= entity.x && nextX - colAcc <= entity.x)) && ((y <= entity.y && nextY >= entity.y) || (y >= entity.y && nextY <= entity.y))) {
+                                if(x != Double(Int(x + 0.5)) || y != Double(Int(y + 0.5))) {
                                     nextX = entity.nextX
                                     xVel = 0
                                     horizontalMovementTimer = 0
                                     
-                                    newColorIndex = -2
-                                    
-                                    (entity as! ExitBlock).disable()
                                     GameState.stopPlayerMovement = true
-                                    GameState.gameAction(GameAction.endingStage)
+                                    GameState.gameAction(GameAction.inverting)
                                 }
                             }
                         }

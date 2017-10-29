@@ -9,941 +9,719 @@
 import Foundation
 import SpriteKit
 
-/*
 class EditorManager {
-    static var drawNode: SKShapeNode!
+    static var drawNode: SKNode!
     static var editorScene: EditorScene!
     
-    static let border = 10
     
-    static var iconType = 0
-    static let numBlockIconTypes = 2
-    static let numEntityIconTypes = 2
+    /*menu sprite variables*/
+    static let blockButtonSize = 0.75
+    static let blockButtonBorder = 0.12
+    static let blockWindowHeight = (blockButtonSize * 2) + (blockButtonBorder * 3)
+    static let blockWindowWidth = (blockButtonSize * 6) + (blockButtonBorder * 7)
     
-    static var switchLayerButton: EditorButton!
-    static var layerNum = 0
-    static var blockLayer = SKShapeNode.init()
-    static var entityLayer = SKShapeNode.init()
+    static let numMenuButtons = 4
+    static let menuButtonWidth = 3.6
+    static let menuButtonHeight = 0.6
+    static let menuButtonBorder = 0.12
+    static let menuWindowHeight = (menuButtonHeight * Double(numMenuButtons)) + (menuButtonBorder * Double(numMenuButtons + 1))
+    static let menuWindowWidth = (menuButtonWidth * 1) + (blockButtonBorder * 2)
     
-    static var selectedEntity: Entity?
-    static var selectedEntityFrame = SKShapeNode.init()
+    static var menuOpenSpeed = 2.0
     
-    static var currentBlockIcon = SKShapeNode.init()
-    static var menu = SKShapeNode.init()
-    static var currentBlockButton: EditorButton!
-    static var rotateLeftButton: EditorButton!
-    static var rotateRightButton: EditorButton!
-    static var settingsButton: EditorButton!
-    static var invertButton: EditorButton!
+    static var blockMenu: SKNode!
+    static var blockMenuOpenButton: EditorMenuOpenButton!
+    static var blockMenuButtons: [EditorBlockButton?] = []
+    static var blockMenuOpenPct: Double = 0
+    static var blockMenuOpening = false
     
-    static var quit: EditorButton!
-    static var play: EditorButton!
-    static var save: EditorButton!
-    static var copyToClipboard: EditorButton!
-    static var loadFromClipboard: EditorButton!
-    static var reset: EditorButton!
+    static var triangleMenu: SKNode!
+    static var triangleMenuOpenButton: EditorMenuOpenButton!
+    static var triangleMenuButtons: [EditorBlockButton?] = []
+    static var triangleMenuOpenPct: Double = 0
+    static var triangleMenuOpening = false
     
-    static var exitStageButton: EditorButton!
+    static var mainMenu: SKNode!
+    static var mainMenuOpenButton: EditorMenuOpenButton!
+    static var mainMenuButtons: [EditorMainMenuButton?] = []
+    static var mainMenuOpenPct: Double = 0
+    static var mainMenuOpening = false
     
-    static var drawColor = -1
-    static var colors = [EditorButton]()
     
-    static var rotating = false
-    static var inMenu = false
+    /*editor control variables*/
+    static var currentBlock: Entity? = nil
+    static var currentBlockIcon: SKNode!
+    static var canPlaceBlock = true
+    
+    static var singleTouchTimer = 0
+    static var doubleTouchTimer = 0
+    static var singleTouchStartPosition = CGPoint(x: -9999, y: -9999)
+    static var doubleTouchStartPositions = [CGPoint(x: -9999, y: -9999), CGPoint(x: -9999, y: -9999)]
+    
+    static var doubleTouchStartAngle: CGFloat = 0.0
+    static var prevAngle: CGFloat = 0.0
     
     static var prevSingleTouchTimer = 0
-    static var singleTouchTimer = 0
-    static var menuButtonTimer = 0
-    static var menuButtonTimerMax = 12
+    static var prevDoubleTouchTimer = 0
+    
+    static let cameraSpeed = 3.5
+    static let minCameraZoom = 0.15
+    static let placeDragMinFrames = 8
+    static let placeTapMaxFrames = placeDragMinFrames
+    
     static var pressedButton = false
     static var prevPressedButton = false
-    static var dragTimer = 0
-    static var dragTimerMax = 5
+    
+    static var rotateProgress = 0.0
     
     static var camera = CGPoint(x: 0, y: 0)
+    static var cameraVelocity = CGPoint(x: 0, y: 0)
+    static var cameraZoom = 1.0
+    static var cameraZoomVelocity = 0.0
+    static var cameraRotation = 0.0
+    static var rotationVelocity = 0.0
     
     class func update(delta: TimeInterval) {
-        /*if(!GameState.currentlyEditing) {
-            exitStageButton.sprite[0].position = CGPoint(x: 0, y: 0)
-            exitStageButton.update(active: true, delta: delta)
-            if(exitStageButton.action && GameState.state == "in game" && GameState.playerState == "free") {
-                exitStageButton.sprite[0].alpha = 0.0
-                GameState.gameAction(type: "begin editor")
+        prevSingleTouchTimer = singleTouchTimer
+        prevDoubleTouchTimer = doubleTouchTimer
+        prevPressedButton = pressedButton
+        
+        if(InputController.currentTouches.count == 0) {
+            canPlaceBlock = true
+        }
+        if(InputController.currentTouches.count == 1) {
+            singleTouchTimer += 1
+            
+            if(singleTouchTimer == 1) {
+                singleTouchStartPosition = CGPoint(x: InputController.currentTouches[0].x, y: InputController.currentTouches[0].y)
             }
         } else {
-            EntityManager.updateEntitySprites()
+            singleTouchTimer = 0
             
-            for c in colors {
-                if(c.colorIndex == -4) {
-                    c.loadColor()
-                    if(drawColor == -4) {
-                        loadCurrentIcon()
-                    }
+            pressedButton = false
+        }
+        if(InputController.currentTouches.count == 2) {
+            doubleTouchTimer += 1
+            
+            canPlaceBlock = false
+            if(doubleTouchTimer == 1) {
+                doubleTouchStartPositions = [CGPoint(x: InputController.currentTouches[0].x, y: InputController.currentTouches[0].y), CGPoint(x: InputController.currentTouches[1].x, y: InputController.currentTouches[1].y)]
+            }
+        } else {
+            doubleTouchTimer = 0
+            
+            rotationVelocity -= cameraRotation / 60
+        }
+        
+        
+        let canPressButton = (!pressedButton && singleTouchTimer > 0) || (singleTouchTimer == 0 && prevSingleTouchTimer > 0 && doubleTouchTimer == 0)
+        updateMainMenu(delta: delta, press: canPressButton)
+        updateBlockMenu(delta: delta, press: canPressButton)
+        updateTriangleMenu(delta: delta, press: canPressButton)
+        
+        if(singleTouchTimer == 0 && doubleTouchTimer == 0 && prevSingleTouchTimer > 0 && prevSingleTouchTimer < placeTapMaxFrames) {
+            //place one block
+            if(currentBlock != nil && canPlaceBlock && !pressedButton && !prevPressedButton) {
+                drawBlock(touch: InputController.prevTouches[0])
+            }
+        } else if(singleTouchTimer >= placeDragMinFrames) {
+            //place many blocks
+            if(currentBlock != nil && canPlaceBlock && !pressedButton && !prevPressedButton) {
+                let dx = InputController.currentTouches[0].x - InputController.prevTouches[0].x
+                let dy = InputController.currentTouches[0].y - InputController.prevTouches[0].y
+                let distance = max(1, ceil(hypot(dx, dy) / CGFloat(Board.blockSize)) * 2)
+                
+                for i in 0...Int(distance)-1 {
+                    let point = CGPoint(x: InputController.prevTouches[0].x + (dx * (CGFloat(i) / distance)), y: InputController.prevTouches[0].y + (dy * (CGFloat(i) / distance)))
+                    drawBlock(touch: point)
                 }
             }
-            //colors[0].sprite[0].fillColor = colors[0].color
+        } else if(doubleTouchTimer > 1) {
+            //pan camera
+            let movementX = ((InputController.currentTouches[0].x + InputController.currentTouches[1].x) / 2) - ((InputController.prevTouches[0].x + InputController.prevTouches[1].x) / 2)
+            let movementY = ((InputController.currentTouches[0].y + InputController.currentTouches[1].y) / 2) - ((InputController.prevTouches[0].y + InputController.prevTouches[1].y) / 2)
             
-            if(layerNum == 0) {
-                blockLayer.alpha = 1.0
-                entityLayer.alpha = 0.0
+            cameraVelocity.x -= CGFloat(Double(movementX) / Board.blockSize / delta / 1000 * cameraSpeed / cameraZoom)
+            cameraVelocity.y += CGFloat(Double(movementY) / Board.blockSize / delta / 1000 * cameraSpeed / cameraZoom)
+            
+            
+            //zoom camera
+            let distance = hypot(InputController.currentTouches[0].x - InputController.currentTouches[1].x, InputController.currentTouches[0].y - InputController.currentTouches[1].y) - hypot(InputController.prevTouches[0].x - InputController.prevTouches[1].x, InputController.prevTouches[0].y - InputController.prevTouches[1].y)
+            var modifier = min(1, cameraZoom)
+            if(distance < 0) {
+                modifier = min(1, cameraZoom - minCameraZoom)
+            }
+            cameraZoomVelocity += Double(distance) * cameraSpeed * modifier / 3200
+            if(cameraZoom + cameraZoomVelocity < minCameraZoom) {
+                cameraZoomVelocity = (minCameraZoom - cameraZoom) / 3
+            }
+            
+            
+            //rotate camera
+            var currentAngle = atan((InputController.currentTouches[1].y - InputController.currentTouches[0].y) / (InputController.currentTouches[1].x - InputController.currentTouches[0].x + 0.0001))
+            if(InputController.currentTouches[1].x > InputController.currentTouches[0].x && doubleTouchStartPositions[1].x < doubleTouchStartPositions[0].x ||
+                    InputController.currentTouches[1].x < InputController.currentTouches[0].x && doubleTouchStartPositions[1].x > doubleTouchStartPositions[0].x) {
+                currentAngle += 3.14159
+            }
+            if(currentAngle < 0) {
+                currentAngle += 3.14159 * 2
+            }
+            if(doubleTouchTimer == 2) {
+                doubleTouchStartAngle = currentAngle
+                prevAngle = currentAngle
+            }
+            
+            var angleDistance = currentAngle - prevAngle
+            if(abs(angleDistance) > 3.14159) {
+                if(abs((3.14159 * 2) - angleDistance) < abs(angleDistance)) {
+                    angleDistance = (3.14159 * 2) - angleDistance
+                    if(cameraRotation < 0) {
+                        angleDistance *= -1
+                    }
+                }
+                if(abs(angleDistance + (3.14159 * 2)) < abs(angleDistance)) {
+                    angleDistance = angleDistance + (3.14159 * 2)
+                }
+            }
+            rotationVelocity += Double(angleDistance) / 4
+            
+            prevAngle = currentAngle
+            pressedButton = true
+        }
+        
+        
+        camera.x += cameraVelocity.x
+        camera.y += cameraVelocity.y
+        cameraZoom += cameraZoomVelocity
+        cameraVelocity.x *= 0.8
+        cameraVelocity.y *= 0.8
+        cameraZoomVelocity *= 0.8
+        
+        if(cameraZoom < minCameraZoom) {
+            cameraZoom = minCameraZoom
+            cameraZoomVelocity = 0
+        }
+        
+        cameraRotation += rotationVelocity
+        rotationVelocity *= 0.8
+        
+        if(cameraRotation > (3.14159 / 4)) {
+            GameState.gameAction(GameAction.rotateLeftInstant)
+        }
+        if(cameraRotation < -(3.14159 / 4)) {
+            GameState.gameAction(GameAction.rotateRightInstant)
+        }
+        
+        
+        if(currentBlock != nil) {
+            updateCurrentBlock()
+        }
+    }
+    
+    class func rotateLeft() {
+        cameraRotation -= (3.14159 / 2)
+        
+        let newX = camera.y
+        let newY = CGFloat(Board.boardHeight) - camera.x - 1
+        camera = CGPoint(x: newX, y: newY)
+    }
+    
+    class func rotateRight() {
+        cameraRotation += (3.14159 / 2)
+        
+        let newX = CGFloat(Board.boardWidth) - camera.y - 1
+        let newY = camera.x
+        camera = CGPoint(x: newX, y: newY)
+    }
+    
+    private class func updateMainMenu(delta: TimeInterval, press: Bool) {
+        mainMenuOpenButton.update(active: press, delta: delta)
+        if(mainMenuOpenButton.action && !pressedButton) {
+            pressedButton = true
+            
+            if(mainMenuOpenPct != 1 && (!mainMenuOpening || mainMenuOpenPct == 0)) {
+                mainMenuOpenPct += 0.01
+                mainMenuOpening = true
             } else {
-                blockLayer.alpha = 0.0
-                entityLayer.alpha = 1.0
-            }
-            prevPressedButton = pressedButton
-            prevSingleTouchTimer = singleTouchTimer
-            
-            if(!rotating && GameState.state != "inverting") {
-                if(inMenu) {
-                    rotateLeftButton.update(active: false, delta: delta)
-                    rotateRightButton.update(active: false, delta: delta)
-                    currentBlockButton.update(active: false, delta: delta)
-                    settingsButton.update(active: false, delta: delta)
-                    invertButton.update(active: false, delta: delta)
-                    
-                    switchLayerButton.update(active: false, delta: delta)
-                    for b in colors {
-                        b.update(active: false, delta: delta)
-                    }
-                    save.update(active: true, delta: delta)
-                    reset.update(active: true, delta: delta)
-                    copyToClipboard.update(active: true, delta: delta)
-                    loadFromClipboard.update(active: true, delta: delta)
-                    play.update(active: true, delta: delta)
-                    quit.update(active: true, delta: delta)
-                    
-                    menuButtonTimer -= 1
-                    if(save.action) {
-                        Memory.saveStageEdit(code: encodeStageEdit())
-                        menuButtonTimer = menuButtonTimerMax
-                    }
-                    if(reset.action) {
-                        Memory.saveStageEdit(code: Stage.defaultStage)
-                        inMenu = false
-                        GameState.gameAction(type: "begin editor")
-                        menuButtonTimer = menuButtonTimerMax
-                        EntityManager.reloadAllEntities()
-                        
-                        blockLayer.alpha = 1.0
-                        entityLayer.alpha = 0.0
-                        selectedEntityFrame.alpha = 0.0
-                        layerNum = 0
-                        loadCurrentIcon()
-                        //pressedButton = true
-                        
-                        EditorManager.camera = CGPoint(x: Double(Board.blocks[0].count-1)/2.0, y: Double(Board.blocks.count-1)/2.0)
-                        GameState.drawNode.position = CGPoint(x: -((EditorManager.camera.x + 0.5) * CGFloat(Board.blockSize)), y: ((EditorManager.camera.y - 0.5) * CGFloat(Board.blockSize)))
-                    }
-                    if(copyToClipboard.action) {
-                        UIPasteboard.general.string = EditorManager.encodeStageEdit()
-                        print(UIPasteboard.general.string ?? "no string found")
-                        menuButtonTimer = menuButtonTimerMax
-                    }
-                    if(loadFromClipboard.action) {
-                        let pasteboardString: String? = UIPasteboard.general.string
-                        if let theString = pasteboardString {
-                            Memory.saveStageEdit(code: theString)
-                            inMenu = false
-                            GameState.gameAction(type: "begin editor")
-                            menuButtonTimer = menuButtonTimerMax
-                            EntityManager.reloadAllEntities()
-                            
-                            EditorManager.camera = CGPoint(x: Double(Board.blocks[0].count-1)/2.0, y: Double(Board.blocks.count-1)/2.0)
-                            GameState.drawNode.position = CGPoint(x: -((EditorManager.camera.x + 0.5) * CGFloat(Board.blockSize)), y: ((EditorManager.camera.y - 0.5) * CGFloat(Board.blockSize)))
-                        }
-                    }
-                    if(play.action) {
-                        Memory.saveStageEdit(code: encodeStageEdit())
-                        GameState.currentlyEditing = false
-                        GameState.beginGame()
-                        inMenu = false
-                        menuButtonTimer = menuButtonTimerMax
-                        drawNode.removeAllChildren()
-                        EntityManager.reloadAllEntities()
-                        exitStageButton.sprite[0].alpha = 1.0
-                    }
-                    if(quit.action) {
-                        Memory.saveStageEdit(code: encodeStageEdit())
-                        GameState.currentlyEditing = false
-                        GameState.inEditor = false
-                        inMenu = false
-                        drawNode.removeAllChildren()
-                        editorScene.controller.goToScene("menu")
-                    }
-                    
-                    if(InputController.currentTouches.count > 0 && InputController.prevTouches.count == 0 && menuButtonTimer <= 0) {
-                        inMenu = false
-                        menu.alpha = 0.0
-                        pressedButton = true
-                        menuButtonTimer = menuButtonTimerMax
-                    }
-                } else {
-                    rotateLeftButton.update(active: true, delta: delta)
-                    rotateRightButton.update(active: true, delta: delta)
-                    currentBlockButton.update(active: true, delta: delta)
-                    settingsButton.update(active: true, delta: delta)
-                    invertButton.update(active: true, delta: delta)
-                    
-                    switchLayerButton.update(active: true, delta: delta)
-                    for b in colors {
-                        b.update(active: true, delta: delta)
-                    }
-                    
-                    play.update(active: false, delta: delta)
-                    save.update(active: false, delta: delta)
-                    reset.update(active: false, delta: delta)
-                    copyToClipboard.update(active: false, delta: delta)
-                    loadFromClipboard.update(active: false, delta: delta)
-                    quit.update(active: false, delta: delta)
-                    
-                    //check for input, pan and zoom if two touches found
-                    dragTimer -= 1
-                    menuButtonTimer -= 1
-                    if(InputController.currentTouches.count == 1) {
-                        if(InputController.prevTouches.count != 1) {
-                            singleTouchTimer = 1
-                            pressedButton = false
-                        } else {
-                            singleTouchTimer += 1
-                        }
-                    } else {
-                        singleTouchTimer = 0
-                        pressedButton = false
-                        
-                        if(InputController.currentTouches.count == 2) {
-                            if(InputController.prevTouches.count == 2) {
-                                let moveSpeed: CGFloat = 1.0 / CGFloat(Board.blockSize)
-                                camera.x += -moveSpeed * (((InputController.currentTouches[0].x) - (InputController.prevTouches[0].x)) + ((InputController.currentTouches[1].x) - (InputController.prevTouches[1].x)))/2
-                                camera.y -= -moveSpeed * (((InputController.currentTouches[0].y) - (InputController.prevTouches[0].y)) + ((InputController.currentTouches[1].y) - (InputController.prevTouches[1].y)))/2
-                                let point0 = InputController.currentTouches[0]
-                                let point1 = InputController.currentTouches[1]
-                                let prevPoint0 = InputController.prevTouches[0]
-                                let prevPoint1 = InputController.prevTouches[1]
-                                let prevDistance = hypot(prevPoint0.x - prevPoint1.x, prevPoint0.y - prevPoint1.y)
-                                let currentDistance = hypot(point0.x - point1.x, point0.y - point1.y)
-                                
-                                let maxSize = 150.0
-                                let minSize = 7.0
-                                Board.blockSize += Double((currentDistance - prevDistance) / 5.0)
-                                if(Board.blockSize < minSize) {
-                                    Board.blockSize = minSize
-                                } else if(Board.blockSize > maxSize) {
-                                    Board.blockSize = maxSize
-                                }
-                                dragTimer = dragTimerMax
-                                
-                                selectedEntityFrame.removeFromParent()
-                                selectedEntityFrame = SKShapeNode.init(rect: CGRect.init(x: -(Board.blockSize * 0.1), y: -(Board.blockSize * 0.1), width: Board.blockSize * 1.2, height: Board.blockSize * 1.2))
-                                selectedEntityFrame.fillColor = UIColor.clear
-                                selectedEntityFrame.strokeColor = UIColor.white
-                                selectedEntityFrame.lineWidth = CGFloat(Board.blockSize / 15.0)
-                                entityLayer.addChild(selectedEntityFrame)
-                                
-                                EntityManager.reloadAllEntities()
-                            }
-                        }
-                    }
-                    
-                    //check for pressed buttons
-                    if((singleTouchTimer == 1 || pressedButton) && menuButtonTimer <= 0) {
-                        for b in colors {
-                            if(b.action) {
-                                drawColor = b.colorIndex
-                                
-                                if(layerNum == 1 && selectedEntity != nil && selectedEntity?.name == "moving block" && drawColor >= -1) {
-                                    (selectedEntity as! MovingBlock).colorIndex = drawColor
-                                    (selectedEntity as! MovingBlock).initColor()
-                                    selectedEntity?.loadSprite()
-                                    completeRedraw()
-                                }
-                                if(layerNum == 1) {
-                                    loadCurrentIcon()
-                                } else {
-                                    currentBlockIcon.fillColor = loadColor(colorIndex: drawColor)
-                                }
-                                pressedButton = true
-                            }
-                        }
-                        
-                        if(currentBlockButton.action)  {
-                            if(layerNum == 0) {
-                                iconType += 1
-                                if(iconType == numBlockIconTypes) {
-                                    iconType = 0
-                                }
-                            } else {
-                                if(drawColor >= -1) {
-                                    iconType += 1
-                                }
-                                if(iconType == numEntityIconTypes) {
-                                    iconType = 0
-                                }
-                            }
-                            
-                            if(layerNum == 1) {
-                                let selectableEntities = getSelectableEntities()
-                                if(layerNum == 1 && selectedEntity != nil) {
-                                    for i in 0...selectableEntities.count-1 {
-                                        let e = selectableEntities[i]
-                                        
-                                        if(e.equals(selectedEntity!) && e.name == "moving block") {
-                                            let newEntity = MovingBlock.init(color: (e as! MovingBlock).colorIndex, dir: (e as! MovingBlock).direction+1, xPos: e.x, yPos: e.y)
-                                            Board.otherEntities.remove(at: i)
-                                            Board.otherEntities.append(newEntity)
-                                            selectedEntity = newEntity
-                                            completeRedraw()
-                                        }
-                                    }
-                                }
-                            }
-                            
-                            loadCurrentIcon()
-                            pressedButton = true
-                        }
-                        
-                        if(rotateLeftButton.action) {
-                            GameState.hingeDirection = "left"
-                            GameState.gameAction(type: "rotate")
-                            rotating = true
-                            pressedButton = true
-                            if(layerNum == 1 && selectedEntity != nil) {
-                                iconType += 1
-                                if(iconType == 2) {
-                                    iconType = 0
-                                }
-                            }
-                            loadCurrentIcon()
-                        } else if(rotateRightButton.action) {
-                            GameState.hingeDirection = "right"
-                            GameState.gameAction(type: "rotate")
-                            rotating = true
-                            pressedButton = true
-                            if(layerNum == 1 && selectedEntity != nil) {
-                                iconType += 1
-                                if(iconType == 2) {
-                                    iconType = 0
-                                }
-                            }
-                            loadCurrentIcon()
-                        }
-                        
-                        if(settingsButton.action) {
-                            inMenu = true
-                            menu.alpha = 1.0
-                            menuButtonTimer = menuButtonTimerMax
-                        }
-                        
-                        if(invertButton.action) {
-                            GameState.gameAction(type: "invert")
-                        }
-                        
-                        if(switchLayerButton.action) {
-                            if(layerNum == 0) {
-                                layerNum = 1
-                                switchLayerButton.setText(newText: "E")
-                                blockLayer.alpha = 0.0
-                                entityLayer.alpha = 1.0
-                            } else {
-                                layerNum = 0
-                                switchLayerButton.setText(newText: "B")
-                                blockLayer.alpha = 1.0
-                                entityLayer.alpha = 0.0
-                            }
-                            if(drawColor < -1) {
-                                drawColor = -1
-                            }
-                            iconType = 0
-                            loadCurrentIcon()
-                            pressedButton = true
-                        }
-                    }
-                    
-                    if(!rotating && !pressedButton && !prevPressedButton && !inMenu && menuButtonTimer <= 0) {
-                        if(layerNum == 0) {
-                            if(((singleTouchTimer > 4 && dragTimer <= 0) || (prevSingleTouchTimer > 1 && singleTouchTimer == 0 && prevSingleTouchTimer <= 4 && dragTimer <= 0)) && InputController.currentTouches.count != 2 && InputController.prevTouches.count != 2) {
-                                for t in InputController.prevTouches {
-                                    var x = Int(camera.x + (t.x / CGFloat(Board.blockSize)) + 0.5 + 500) - 500
-                                    var y = Int(camera.y - (t.y / CGFloat(Board.blockSize)) + 0.5 + 500) - 500
-                                    
-                                    var addedBlock = false
-                                    while(x < 0) {
-                                        addLeftRow()
-                                        x += 1
-                                        camera.x += 1
-                                        addedBlock = true
-                                    }
-                                    while(x > Board.blocks[0].count-1) {
-                                        addRightRow()
-                                        addedBlock = true
-                                    }
-                                    while(y < 0) {
-                                        addTopRow()
-                                        y += 1
-                                        camera.y += 1
-                                        addedBlock = true
-                                    }
-                                    while(y > Board.blocks.count-1) {
-                                        addBottomRow()
-                                        addedBlock = true
-                                    }
-                                    
-                                    drawBlock(x: x, y: y, addBlock: addedBlock)
-                                }
-                            }
-                        } else if(layerNum == 1) {
-                            
-                            if(drawColor < -1) {
-                                selectedEntity = nil
-                                if((singleTouchTimer == 0 && prevSingleTouchTimer < 4 && InputController.prevTouches.count == 1 && InputController.currentTouches.count == 0) || (singleTouchTimer > 4 && InputController.prevTouches.count == 1 && InputController.currentTouches.count == 1))  {
-                                    //quick tap
-                                    let t = InputController.prevTouches[0]
-                                    
-                                    let x = Int(camera.x + (t.x / CGFloat(Board.blockSize)) + 0.5 + 500) - 500
-                                    let y = Int(camera.y - (t.y / CGFloat(Board.blockSize)) + 0.5 + 500) - 500
-                                    
-                                    let selectableEntities = getSelectableEntities()
-                                    for i in 0...selectableEntities.count-1 {
-                                        let e = selectableEntities[i]
-                                        
-                                        if(e.x == Double(x) && e.y == Double(y)) {
-                                            if(e.name != "player") {
-                                                Board.otherEntities.remove(at: i)
-                                                
-                                                completeRedraw()
-                                            }
-                                        }
-                                    }
-                                }
-                            } else {
-                                if(selectedEntity == nil) {
-                                    if((singleTouchTimer == 0 && prevSingleTouchTimer < 4 && InputController.prevTouches.count == 1 && InputController.currentTouches.count == 0) || (singleTouchTimer > 4 && InputController.prevTouches.count == 1 && InputController.currentTouches.count == 1))  {
-                                        //quick tap
-                                        let t = InputController.prevTouches[0]
-                                        
-                                        var x = Int(camera.x + (t.x / CGFloat(Board.blockSize)) + 0.5 + 500) - 500
-                                        var y = Int(camera.y - (t.y / CGFloat(Board.blockSize)) + 0.5 + 500) - 500
-                                        
-                                        for e in getSelectableEntities() {
-                                            if(e.x == Double(x) && e.y == Double(y)) {
-                                                selectedEntity = e
-                                                if(e.name == "moving block") {
-                                                    drawColor = (e as! MovingBlock).colorIndex
-                                                    if((e as! MovingBlock).direction == 0) {
-                                                        iconType = 0
-                                                    } else {
-                                                        iconType = 1
-                                                    }
-                                                    loadCurrentIcon()
-                                                }
-                                            }
-                                        }
-                                        
-                                        if(selectedEntity == nil) {
-                                            var addedBlock = false
-                                            while(x < 0) {
-                                                addLeftRow()
-                                                x += 1
-                                                camera.x += 1
-                                                addedBlock = true
-                                            }
-                                            while(x > Board.blocks[0].count-1) {
-                                                addRightRow()
-                                                addedBlock = true
-                                            }
-                                            while(y < 0) {
-                                                addTopRow()
-                                                y += 1
-                                                camera.y += 1
-                                                addedBlock = true
-                                            }
-                                            while(y > Board.blocks.count-1) {
-                                                addBottomRow()
-                                                addedBlock = true
-                                            }
-                                            
-                                            drawBlock(x: x, y: y, addBlock: addedBlock)
-                                        }
-                                    }
-                                } else {
-                                    if(singleTouchTimer == 0 && InputController.prevTouches.count == 1 && prevSingleTouchTimer < 6) {
-                                        //quick tap
-                                        let t = InputController.prevTouches[0]
-                                        
-                                        let x = Int(camera.x + (t.x / CGFloat(Board.blockSize)) + 0.5 + 500) - 500
-                                        let y = Int(camera.y - (t.y / CGFloat(Board.blockSize)) + 0.5 + 500) - 500
-                                        
-                                        var touchedEntity = false
-                                        for e in getSelectableEntities() {
-                                            if(e.x == Double(x) && e.y == Double(y)) {
-                                                if(e.equals(selectedEntity!)) {
-                                                    selectedEntity = nil
-                                                } else {
-                                                    selectedEntity = e
-                                                    if(e.name == "moving block") {
-                                                        drawColor = (e as! MovingBlock).colorIndex
-                                                        if((e as! MovingBlock).direction == 0) {
-                                                            iconType = 0
-                                                        } else {
-                                                            iconType = 1
-                                                        }
-                                                        loadCurrentIcon()
-                                                    }
-                                                }
-                                                touchedEntity = true
-                                            }
-                                        }
-                                        
-                                        if(!touchedEntity) {
-                                            selectedEntity = nil
-                                        }
-                                    } else if(singleTouchTimer > 6 && InputController.prevTouches.count == 1 && InputController.currentTouches.count == 1) {
-                                        //drag
-                                        let t = InputController.prevTouches[0]
-                                        
-                                        let x = Int(camera.x + (t.x / CGFloat(Board.blockSize)) + 0.5 + 500) - 500
-                                        let y = Int(camera.y - (t.y / CGFloat(Board.blockSize)) + 0.5 + 500) - 500
-                                        
-                                        var newSelectedEntity: Entity? = nil
-                                        for e in getSelectableEntities() {
-                                            if(e.x == Double(x) && e.y == Double(y)) {
-                                                newSelectedEntity = e
-                                            }
-                                        }
-                                        
-                                        if(newSelectedEntity == nil) {
-                                            selectedEntity = nil
-                                        } else {
-                                            if(newSelectedEntity?.equals(selectedEntity!))! {
-                                                let newx = Int(camera.x + (InputController.currentTouches[0].x / CGFloat(Board.blockSize)) + 0.5 + 500) - 500
-                                                let newy = Int(camera.y - (InputController.currentTouches[0].y / CGFloat(Board.blockSize)) + 0.5 + 500) - 500
-                                                
-                                                if(!(newx == x && newy == y)) {
-                                                    selectedEntity?.x = Double(newx)
-                                                    selectedEntity?.y = Double(newy)
-                                                    completeRedraw()
-                                                }
-                                            } else {
-                                                selectedEntity = newSelectedEntity
-                                                if(selectedEntity!.name == "moving block") {
-                                                    drawColor = (selectedEntity as! MovingBlock).colorIndex
-                                                    if((selectedEntity as! MovingBlock).direction == 0) {
-                                                        iconType = 0
-                                                    } else {
-                                                        iconType = 1
-                                                    }
-                                                    loadCurrentIcon()
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                
-                if(layerNum == 1) {
-                    if(selectedEntity == nil) {
-                        selectedEntityFrame.alpha = 0.0
-                    } else {
-                        selectedEntityFrame.alpha = 1.0
-                        selectedEntityFrame.position = CGPoint(x: (selectedEntity!.x-Double(camera.x)-0.5)*Board.blockSize, y: (-selectedEntity!.y+Double(camera.y)-0.5)*Board.blockSize)
-                    }
-                }
-            } else if(rotating) {
-                rotateLeftButton.update(active: false, delta: delta)
-                rotateRightButton.update(active: false, delta: delta)
-                currentBlockButton.update(active: false, delta: delta)
-                for b in colors {
-                    b.update(active: false, delta: delta)
-                }
-                
-                singleTouchTimer = 0
-                pressedButton = true
-                
-                if(layerNum == 1 && selectedEntity != nil) {
-                    selectedEntityFrame.alpha = 0.0
-                    selectedEntityFrame.position = CGPoint(x: (selectedEntity!.x-Double(camera.x)-0.5)*Board.blockSize, y: (-selectedEntity!.y+Double(camera.y)-0.5)*Board.blockSize)
-                }
-            }
-            
-            GameState.drawNode.position = CGPoint(x: -((camera.x + 0.5) * CGFloat(Board.blockSize)), y: ((camera.y - 0.5) * CGFloat(Board.blockSize)))
-        }*/
-    }
-    
-    class func getSelectableEntities() -> [Entity] {
-        /*var temp = [Entity]()
-        for e in Board.otherEntities {
-            temp.append(e)
-        }
-        temp.append(EntityManager.getPlayer()!)
-        return temp*/
-    }
-    
-    class func drawBlock(x: Int, y: Int, addBlock: Bool) {
-        /*var addedBlock = addBlock
-        if(layerNum == 0) {
-            if(iconType == 0) {
-                if(drawColor == -4) {
-                    if(Board.blocks[y][x]?.type != 6) {
-                        Board.blocks[y][x] = Block.init(blockType: 6, color: -1, secondaryColor: -1, dir: -1, x: Double(x), y: Double(y))
-                        addedBlock = true
-                    }
-                } else if(drawColor == -3) {
-                    Board.blocks[y][x] = Block.init(blockType: 5, color: -1, secondaryColor: -1, dir: -1, x: Double(x), y: Double(y))
-                    addedBlock = true
-                } else if(drawColor == -2) {
-                    if(Board.blocks[y][x]?.type != 0) {
-                        Board.blocks[y][x] = Block.init(blockType: 0, color: -1, secondaryColor: -1, dir: -1, x: Double(x), y: Double(y))
-                        addedBlock = true
-                    }
-                } else if(drawColor == -1) {
-                    if(Board.blocks[y][x]?.type != 1) {
-                        Board.blocks[y][x] = Block.init(blockType: 1, color: -1, secondaryColor: -1, dir: -1, x: Double(x), y: Double(y))
-                        addedBlock = true
-                    }
-                } else {
-                    if(!(Board.blocks[y][x]?.type == 2 && Board.blocks[y][x]?.colorIndex == drawColor)) {
-                        Board.blocks[y][x] = Block.init(blockType: 2, color: drawColor, secondaryColor: -1, dir: -1, x: Double(x), y: Double(y))
-                        addedBlock = true
-                    }
-                }
-            } else if(iconType == 1) {
-                if(drawColor == -4) {
-                    if(Board.blocks[y][x]?.type == 1 || Board.blocks[y][x]?.type == 5) {
-                        
-                    } else if(Board.blocks[y][x]?.type == 0 || Board.blocks[y][x]?.type == 2 || Board.blocks[y][x]?.type == 3 || Board.blocks[y][x]?.type == 4) {
-                        Board.blocks[y][x] = Block.init(blockType: 7, color: Board.blocks[y][x]!.colorIndex, secondaryColor: -1, dir: Board.direction, x: Double(x), y: Double(y))
-                        addedBlock = true
-                    }
-                } else if(drawColor == -3) {
-                    if(Board.blocks[y][x]?.type == 1 || Board.blocks[y][x]?.type == 5) {
-                        
-                    } else if(Board.blocks[y][x]?.type == 0 || Board.blocks[y][x]?.type == 2 || Board.blocks[y][x]?.type == 3 || Board.blocks[y][x]?.type == 4) {
-                        Board.blocks[y][x] = Block.init(blockType: 9, color: -1, secondaryColor: -1, dir: Board.direction, x: Double(x), y: Double(y))
-                        addedBlock = true
-                    }
-                } else if(drawColor == -2 || drawColor == -1) {
-                    if(Board.blocks[y][x]?.type == 1 || Board.blocks[y][x]?.type == 5) {
-                        
-                    } else if(Board.blocks[y][x]?.type == 0 || Board.blocks[y][x]?.type == 2 || Board.blocks[y][x]?.type == 3 || Board.blocks[y][x]?.type == 4) {
-                        Board.blocks[y][x] = Block.init(blockType: 4, color: Board.blocks[y][x]!.colorIndex, secondaryColor: -1, dir: Board.direction, x: Double(x), y: Double(y))
-                        addedBlock = true
-                    }
-                } else {
-                    if(Board.blocks[y][x]?.type == 1 || Board.blocks[y][x]?.type == 5) {
-                        
-                    } else if(Board.blocks[y][x]?.type == 0 || Board.blocks[y][x]?.type == 2 || Board.blocks[y][x]?.type == 3 || Board.blocks[y][x]?.type == 4) {
-                        if(!GameState.inverted) {
-                            Board.blocks[y][x] = Block.init(blockType: 3, color: Board.blocks[y][x]!.colorIndex, secondaryColor: drawColor, dir: Board.direction, x: Double(x), y: Double(y))
-                        } else {
-                            Board.blocks[y][x] = Block.init(blockType: 8, color: Board.blocks[y][x]!.colorIndex, secondaryColor: drawColor, dir: Board.direction, x: Double(x), y: Double(y))
-                        }
-                        addedBlock = true
-                    }
-                }
+                mainMenuOpenPct -= 0.01
+                mainMenuOpening = false
             }
         } else {
-            if(iconType == 0 || iconType == 1) {
-                if(drawColor == -4 || drawColor == -3 || drawColor == -2) {
-                    let selectableEntities = getSelectableEntities()
-                    for i in 0...selectableEntities.count-1 {
-                        let e = selectableEntities[i]
-                        
-                        if(e.x == Double(x) && e.y == Double(y)) {
-                            if(e.name != "player") {
-                                Board.otherEntities.remove(at: i)
-                                
-                                completeRedraw()
-                            }
-                        }
-                    }
-                } else if(drawColor == -1) {
-                    let e = MovingBlock.init(color: -1, dir: Board.direction+iconType, xPos: Double(x), yPos: Double(y))
-                    Board.otherEntities.append(e)
-                    selectedEntity = e
-                    addedBlock = true
-                } else {
-                    let e = MovingBlock.init(color: drawColor, dir: Board.direction+iconType, xPos: Double(x), yPos: Double(y))
-                    Board.otherEntities.append(e)
-                    selectedEntity = e
-                    addedBlock = true
+            if(mainMenuOpening && mainMenuOpenPct < 1) {
+                mainMenuOpenPct += menuOpenSpeed * delta
+                if(mainMenuOpenPct >= 1) {
+                    mainMenuOpenPct = 1
+                }
+            } else if(!mainMenuOpening && mainMenuOpenPct > 0) {
+                mainMenuOpenPct -= menuOpenSpeed * delta
+                if(mainMenuOpenPct <= 0) {
+                    mainMenuOpenPct = 0
                 }
             }
         }
         
+        mainMenu.position.x = (GameState.screenWidth / 2) - CGFloat(GameState.skewToEdges(pct: mainMenuOpenPct, power: 2) * (menuWindowWidth + blockButtonBorder) * Board.blockSize)
+        mainMenuOpenButton.setHitboxPosition(x: Double(mainMenu.position.x) - ((blockWindowHeight / 4)) * Board.blockSize, y: Double(mainMenu.position.y) + (menuWindowHeight / -2) * Board.blockSize, width: blockWindowHeight * 0.5 * Board.blockSize, height: blockWindowHeight * Board.blockSize)
         
-        if(addedBlock) {
-            completeRedraw()
-        }*/
+        for i in 0...numMenuButtons-1 {
+            var x = 0.0
+            var y = Double(i)
+            x = (((x + 0.5) * menuButtonWidth) + ((x + 0.0) * menuButtonBorder) + ((menuWindowWidth - menuButtonWidth) / 2)) * Board.blockSize
+            y = (((y + 0.5) * menuButtonHeight) + ((y + 1) * menuButtonBorder)) * -Board.blockSize
+            
+            if(mainMenuButtons[i] != nil) {
+                mainMenuButtons[i]?.setHitboxPosition(x: Double(mainMenu.position.x) + x, y: Double(mainMenu.position.y) + y, width: menuButtonWidth * Board.blockSize, height: menuButtonHeight * Board.blockSize)
+                mainMenuButtons[i]?.update(active: press, delta: delta)
+                if((mainMenuButtons[i]?.action)! && !pressedButton) {
+                    pressedButton = true
+                    print(mainMenuButtons[i]!.text)
+                }
+            }
+            
+        }
     }
     
-    class func completeRedraw() {
-        /*let p = EntityManager.getPlayer()!
-        p.loadSprite()
-        EntityManager.entities = []
-        EntityManager.addEntity(entity: p)
-        
-        for row in 0 ... Board.blocks.count-1 {
-            for col in 0 ... Board.blocks[0].count-1 {
-                Board.blocks[row][col]?.removeSpriteFromParent()
-                EntityManager.addEntity(entity: Board.blocks[row][col]!)
+    private class func updateBlockMenu(delta: TimeInterval, press: Bool) {
+        blockMenuOpenButton.update(active: press, delta: delta)
+        if(blockMenuOpenButton.action && !pressedButton) {
+            pressedButton = true
+            
+            if(blockMenuOpenPct != 1 && (!blockMenuOpening || blockMenuOpenPct == 0)) {
+                blockMenuOpenPct += 0.01
+                blockMenuOpening = true
+            } else {
+                blockMenuOpenPct -= 0.01
+                blockMenuOpening = false
             }
-        }
-        for row in 0 ... Board.blocks.count-1 {
-            for col in 0 ... Board.blocks[0].count-1 {
-                if(Board.blocks[row][col]?.type == 6) {
-                    var blockPoint = CGPoint(x: col, y: row)
-                    if(Board.direction > 0) {
-                        for _ in 0...Board.direction-1 {
-                            blockPoint = Board.rotatePoint(blockPoint, clockwise: false)
-                        }
-                    }
-                    Board.blocks[row][col]?.colorProgressionBase = Double(blockPoint.x + blockPoint.y)
+        } else {
+            if(blockMenuOpening && blockMenuOpenPct < 1) {
+                blockMenuOpenPct += menuOpenSpeed * delta
+                if(blockMenuOpenPct >= 1) {
+                    blockMenuOpenPct = 1
+                }
+            } else if(!blockMenuOpening && blockMenuOpenPct > 0) {
+                blockMenuOpenPct -= menuOpenSpeed * delta
+                if(blockMenuOpenPct <= 0) {
+                    blockMenuOpenPct = 0
                 }
             }
         }
-        if(Board.otherEntities.count != 0) {
-            for e in Board.otherEntities {
-                EntityManager.addEntity(entity: e)
+        
+        blockMenu.position.x = (GameState.screenWidth / -2) + CGFloat(blockButtonBorder * Board.blockSize) - CGFloat(GameState.skewToEdges(pct: 1 - blockMenuOpenPct, power: 2) * (blockWindowWidth + blockButtonBorder) * Board.blockSize)
+        blockMenuOpenButton.setHitboxPosition(x: Double(blockMenu.position.x) + (blockWindowWidth + (blockWindowHeight / 4)) * Board.blockSize, y: Double(blockMenu.position.y) + (blockWindowHeight / -2) * Board.blockSize, width: blockWindowHeight * 0.5 * Board.blockSize, height: blockWindowHeight * Board.blockSize)
+        
+        for i in 0...11 {
+            var x = Double(i % 6)
+            var y = Double(Int(i / 6))
+            x = (((x + 0.5) * blockButtonSize) + ((x + 1) * blockButtonBorder)) * Board.blockSize
+            y = (((y + 0.5) * blockButtonSize) + ((y + 1) * blockButtonBorder)) * -Board.blockSize
+            
+            if(blockMenuButtons[i] != nil) {
+                blockMenuButtons[i]?.setHitboxPosition(x: Double(blockMenu.position.x) + x, y: Double(blockMenu.position.y) + y, width: blockButtonSize * Board.blockSize, height: blockButtonSize * Board.blockSize)
+                blockMenuButtons[i]?.update(active: press, delta: delta)
+                if((blockMenuButtons[i]?.action)! && !pressedButton) {
+                    pressedButton = true
+                    currentBlock = (blockMenuButtons[i]?.block)!
+                }
             }
         }
-        EntityManager.sortEntities()
-        EntityManager.redrawEntities(node: GameState.drawNode, name: "all")*/
+    }
+    
+    private class func updateTriangleMenu(delta: TimeInterval, press: Bool) {
+        triangleMenuOpenButton.update(active: press, delta: delta)
+        if(triangleMenuOpenButton.action && !pressedButton) {
+            pressedButton = true
+            
+            if(triangleMenuOpenPct != 1 && (!triangleMenuOpening || triangleMenuOpenPct == 0)) {
+                triangleMenuOpenPct += 0.01
+                triangleMenuOpening = true
+            } else {
+                triangleMenuOpenPct -= 0.01
+                triangleMenuOpening = false
+            }
+        } else {
+            if(triangleMenuOpening && triangleMenuOpenPct < 1) {
+                triangleMenuOpenPct += menuOpenSpeed * delta
+                if(triangleMenuOpenPct >= 1) {
+                    triangleMenuOpenPct = 1
+                }
+            } else if(!triangleMenuOpening && triangleMenuOpenPct > 0) {
+                triangleMenuOpenPct -= menuOpenSpeed * delta
+                if(triangleMenuOpenPct <= 0) {
+                    triangleMenuOpenPct = 0
+                }
+            }
+        }
+        
+        triangleMenu.position.x = (GameState.screenWidth / -2) + CGFloat(blockButtonBorder * Board.blockSize) - CGFloat(GameState.skewToEdges(pct: 1 - triangleMenuOpenPct, power: 2) * (blockWindowWidth + blockButtonBorder) * Board.blockSize)
+        triangleMenuOpenButton.setHitboxPosition(x: Double(triangleMenu.position.x) + (blockWindowWidth + (blockWindowHeight / 4)) * Board.blockSize, y: Double(triangleMenu.position.y) + (blockWindowHeight / -2) * Board.blockSize, width: blockWindowHeight * 0.5 * Board.blockSize, height: blockWindowHeight * Board.blockSize)
+        
+        for i in 0...11 {
+            var x = Double(i % 6)
+            var y = Double(Int(i / 6))
+            x = (((x + 0.5) * blockButtonSize) + ((x + 1) * blockButtonBorder)) * Board.blockSize
+            y = (((y + 0.5) * blockButtonSize) + ((y + 1) * blockButtonBorder)) * -Board.blockSize
+            
+            if(triangleMenuButtons[i] != nil) {
+                triangleMenuButtons[i]?.setHitboxPosition(x: Double(triangleMenu.position.x) + x, y: Double(triangleMenu.position.y) + y, width: blockButtonSize * Board.blockSize, height: blockButtonSize * Board.blockSize)
+                triangleMenuButtons[i]?.update(active: press, delta: delta)
+                if((triangleMenuButtons[i]?.action)! && !pressedButton) {
+                    pressedButton = true
+                    currentBlock = (triangleMenuButtons[i]?.block)!
+                }
+            }
+        }
+    }
+    
+    class func updateCurrentBlock() {
+        currentBlockIcon.removeAllChildren()
+        
+        if(currentBlock != nil) {
+            let sprite = (currentBlock?.sprite.copy() as! SKSpriteNode)
+            sprite.zPosition = -1
+            sprite.zRotation = CGFloat(Board.direction) * (3.14159 / 2)
+            sprite.alpha = (currentBlock?.sprite.alpha)!
+            
+            let border = SKShapeNode.init(rect: CGRect.init(x: (Board.blockSize / -2), y: (Board.blockSize / -2), width: Board.blockSize, height: Board.blockSize))
+            border.strokeColor = UIColor.init(white: 0.4, alpha: 1.0)
+            border.fillColor = UIColor.clear
+            border.lineWidth = 2
+            border.zPosition = 2
+            
+            border.xScale = sprite.xScale
+            border.yScale = sprite.yScale
+            sprite.xScale = 1
+            sprite.yScale = 1
+            
+            currentBlockIcon.addChild(border)
+            border.addChild(sprite)
+        }
+    }
+    
+    class func drawBlock(touch: CGPoint) {
+        let distanceToCenter = hypot(touch.x, touch.y)
+        var angle = atan(touch.y / (touch.x + 0.0001))
+        if(touch.x < 0) {
+            angle += 3.14159
+        }
+        if(angle < 0) {
+            angle += 3.14159 * 2
+        }
+        
+        angle -= CGFloat(cameraRotation)
+        let position = CGPoint(x: distanceToCenter * cos(angle), y: distanceToCenter * sin(angle))
+        
+        let blockPositionX = (floor((Double(position.x) / Board.blockSize / cameraZoom) + Double(camera.x) + 0.5))
+        let blockPositionY = -((floor((Double(position.y) / Board.blockSize / cameraZoom) - Double(camera.y) + 0.5)))
+        
+        
+        var overlappingEntities: [Entity] = []
+        for entity in EntityManager.entities {
+            if(entity.x == blockPositionX && entity.y == blockPositionY) {
+                overlappingEntities.append(entity)
+            }
+        }
+        
+        var canPlace = true
+        switch(currentBlock!.name) {
+        case "solid block":
+            for entity in overlappingEntities {
+                if(entity.name == "solid block" || entity.name == "nonsolid block" || entity.name == "colored block" || entity.name == "hazard block") {
+                    EntityManager.removeEntity(entity: entity)
+                }
+            }
+            
+            EntityManager.addEntity(entity: SolidBlock.init(x: Int(blockPositionX), y: Int(blockPositionY)))
+            break
+        case "nonsolid block":
+            for entity in overlappingEntities {
+                if(entity.name == "solid block" || entity.name == "nonsolid block" || entity.name == "colored block" || entity.name == "hazard block") {
+                    EntityManager.removeEntity(entity: entity)
+                }
+            }
+            
+            EntityManager.addEntity(entity: NonsolidBlock.init(x: Int(blockPositionX), y: Int(blockPositionY)))
+            break
+        case "colored block":
+            for entity in overlappingEntities {
+                if(entity.name == "solid block" || entity.name == "nonsolid block" || entity.name == "colored block" || entity.name == "hazard block") {
+                    EntityManager.removeEntity(entity: entity)
+                }
+            }
+            
+            EntityManager.addEntity(entity: ColoredBlock.init(x: Int(blockPositionX), y: Int(blockPositionY), colorIndex: (currentBlock as! ColoredBlock).colorIndex))
+            break
+        case "hazard block":
+            for entity in overlappingEntities {
+                if(entity.name == "solid block" || entity.name == "nonsolid block" || entity.name == "colored block" || entity.name == "hazard block") {
+                    EntityManager.removeEntity(entity: entity)
+                }
+            }
+            
+            EntityManager.addEntity(entity: NonsolidBlock.init(x: Int(blockPositionX), y: Int(blockPositionY)))
+            EntityManager.addEntity(entity: HazardBlock.init(x: Int(blockPositionX), y: Int(blockPositionY)))
+            break
+        case "color change block":
+            if(overlappingEntities.count == 0) {
+                canPlace = false
+            }
+            for entity in overlappingEntities {
+                if(entity.name == "solid block" || entity.name == "hazard block") {
+                    canPlace = false
+                }
+            }
+            if(canPlace) {
+                for entity in overlappingEntities {
+                    if(entity.name == "color change block" || entity.name == "exit block" || entity.name == "invert block") {
+                        EntityManager.removeEntity(entity: entity)
+                    }
+                }
+                
+                EntityManager.addEntity(entity: ColorChangeBlock.init(x: Int(blockPositionX), y: Int(blockPositionY), colorIndex: (currentBlock as! ColorChangeBlock).colorIndex, direction: Board.direction))
+            }
+            break
+        case "exit block":
+            if(overlappingEntities.count == 0) {
+                canPlace = false
+            }
+            for entity in overlappingEntities {
+                if(entity.name == "solid block" || entity.name == "hazard block") {
+                    canPlace = false
+                }
+            }
+            if(canPlace) {
+                for entity in overlappingEntities {
+                    if(entity.name == "color change block" || entity.name == "exit block" || entity.name == "invert block") {
+                        EntityManager.removeEntity(entity: entity)
+                    }
+                }
+                
+                EntityManager.addEntity(entity: ExitBlock.init(x: Int(blockPositionX), y: Int(blockPositionY), direction: Board.direction))
+            }
+            break
+        case "invert block":
+            if(overlappingEntities.count == 0) {
+                canPlace = false
+            }
+            for entity in overlappingEntities {
+                if(entity.name == "solid block" || entity.name == "hazard block") {
+                    canPlace = false
+                }
+            }
+            if(canPlace) {
+                for entity in overlappingEntities {
+                    if(entity.name == "color change block" || entity.name == "exit block" || entity.name == "invert block") {
+                        EntityManager.removeEntity(entity: entity)
+                    }
+                }
+                
+                EntityManager.addEntity(entity: InvertBlock.init(x: Int(blockPositionX), y: Int(blockPositionY), direction: Board.direction))
+            }
+            break
+        default:
+            break
+        }
+        
+        Board.loadHazardBlockData()
+        EntityManager.updateEntityAttributes()
+        EntityManager.redrawEntities(node: GameState.drawNode, name: "all")
     }
     
     class func initElements() {
-        /*drawNode.removeAllChildren()
+        drawNode.removeAllChildren()
         
-        blockLayer = SKShapeNode.init(rect: CGRect.init(x: 0, y: 0, width: 1, height: 1))
-        blockLayer.fillColor = UIColor.clear
-        blockLayer.strokeColor = UIColor.clear
-        drawNode.addChild(blockLayer)
+        blockMenu = SKNode.init()
+        blockMenu.zPosition = 10
+        blockMenu.position = CGPoint(x: (GameState.screenWidth / -2) + CGFloat(blockButtonBorder * Board.blockSize), y: (GameState.screenHeight / 2) - CGFloat(blockButtonBorder * Board.blockSize))
         
-        entityLayer = SKShapeNode.init(rect: CGRect.init(x: 0, y: 0, width: 1, height: 1))
-        entityLayer.fillColor = UIColor.clear
-        entityLayer.strokeColor = UIColor.clear
-        drawNode.addChild(entityLayer)
+        let blockBox = SKShapeNode.init(rect: CGRect.init(x: (blockWindowWidth * 0) * Board.blockSize, y: (blockWindowHeight / -1) * Board.blockSize, width: blockWindowWidth * Board.blockSize, height: blockWindowHeight * Board.blockSize), cornerRadius: 0)
+        //blockBox.
+        blockBox.strokeColor = UIColor.init(white: 0.4, alpha: 1.0)
+        blockBox.lineWidth = 3
+        blockBox.fillColor = UIColor.black
+        blockBox.zPosition = 1
+        blockMenu.addChild(blockBox)
+        drawNode.addChild(blockMenu)
         
+        blockMenuOpenButton = EditorMenuOpenButton.init(x: blockWindowWidth * Board.blockSize, y: (blockWindowHeight / -2) * Board.blockSize, height: blockWindowHeight * Board.blockSize)
+        blockMenuOpenButton.setHitboxPosition(x: Double(blockMenu.position.x) + blockWindowWidth * Board.blockSize, y: Double(blockMenu.position.y) + (blockWindowHeight / -2) * Board.blockSize, width: blockWindowHeight * Board.blockSize, height: blockWindowHeight * Board.blockSize)
+        blockMenu.addChild(blockMenuOpenButton.sprite)
         
-        let width = UIScreen.main.bounds.width
-        let height = UIScreen.main.bounds.height
+        let blockMenuLabel = SKLabelNode.init(text: "BLOCKS")
+        blockMenuLabel.fontName = "Menlo-BoldItalic"
+        blockMenuLabel.fontColor = UIColor.init(white: 0.9, alpha: 1.0)
+        blockMenuLabel.fontSize = CGFloat(floor(blockButtonSize * Board.blockSize * 0.42))
+        blockMenuLabel.position.x += CGFloat(blockButtonSize * Board.blockSize * 0.53)
+        blockMenuLabel.zRotation = CGFloat(3.14159 / 2)
+        blockMenuLabel.zPosition = 4
+        blockMenuOpenButton.sprite.addChild(blockMenuLabel)
         
-        let c = CGPoint(x: Int(width/2)-border-Int((Board.defaultBlockSize*5)/4), y: Int(height/2)-border-Int((Board.defaultBlockSize*5)/4))
-        exitStageButton = EditorButton.init(x: Int(c.x), y: Int(c.y), width: Int((Board.defaultBlockSize*5)/4), height: Int((Board.defaultBlockSize*5)/4), leniency: border, type: 5, colorIndex: -1, btext: "")
-        exitStageButton.sprite[0].alpha = 0.0
-        for s in exitStageButton.sprite {
-            editorScene.superNode.addChild(s)
-        }
+        blockMenuButtons = [nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil]
         
-        let buttonSize = Int(Double(Int(width*1) - (border * 11)) / (10.0 + 1.5))
-        
-        selectedEntityFrame = SKShapeNode.init(rect: CGRect.init(x: -(Board.blockSize * 0.1), y: -(Board.blockSize * 0.1), width: Board.blockSize * 1.2, height: Board.blockSize * 1.2))
-        selectedEntityFrame.fillColor = UIColor.clear
-        selectedEntityFrame.strokeColor = UIColor.white
-        selectedEntityFrame.lineWidth = 3
-        selectedEntityFrame.zPosition = 95
-        entityLayer.addChild(selectedEntityFrame)
-        
-        for i in 0...9 {
-            colors.append(EditorButton.init(x: border*(i+1) + (buttonSize*i) - Int(width / 2), y: Int(height/2) - buttonSize - border, width: buttonSize, height: buttonSize, leniency: border/2, type: 1, colorIndex: i-4, btext: ""))
-        }
-        
-        for b in colors {
-            for s in b.sprite {
-                drawNode.addChild(s)
+        for i in 0...11 {
+            var x = Double(i % 6)
+            var y = Double(Int(i / 6))
+            x = (((x + 0.5) * blockButtonSize) + ((x + 1) * blockButtonBorder)) * Board.blockSize
+            y = (((y + 0.5) * blockButtonSize) + ((y + 1) * blockButtonBorder)) * -Board.blockSize
+            switch(i) {
+            case 0:
+                blockMenuButtons[i] = EditorBlockButton.init(x: x, y: y, size: blockButtonSize, block: SolidBlock.init(x: 0, y: 0)); break
+            case 1:
+                blockMenuButtons[i] = EditorBlockButton.init(x: x, y: y, size: blockButtonSize, block: NonsolidBlock.init(x: 0, y: 0)); break
+            case 4:
+                blockMenuButtons[i] = EditorBlockButton.init(x: x, y: y, size: blockButtonSize, block: HazardBlock.init(x: 0, y: 0)); break
+            case 6:
+                blockMenuButtons[i] = EditorBlockButton.init(x: x, y: y, size: blockButtonSize, block: ColoredBlock.init(x: 0, y: 0, colorIndex: 0)); break
+            case 7:
+                blockMenuButtons[i] = EditorBlockButton.init(x: x, y: y, size: blockButtonSize, block: ColoredBlock.init(x: 0, y: 0, colorIndex: 1)); break
+            case 8:
+                blockMenuButtons[i] = EditorBlockButton.init(x: x, y: y, size: blockButtonSize, block: ColoredBlock.init(x: 0, y: 0, colorIndex: 2)); break
+            case 9:
+                blockMenuButtons[i] = EditorBlockButton.init(x: x, y: y, size: blockButtonSize, block: ColoredBlock.init(x: 0, y: 0, colorIndex: 3)); break
+            case 10:
+                blockMenuButtons[i] = EditorBlockButton.init(x: x, y: y, size: blockButtonSize, block: ColoredBlock.init(x: 0, y: 0, colorIndex: 4)); break
+            case 11:
+                blockMenuButtons[i] = EditorBlockButton.init(x: x, y: y, size: blockButtonSize, block: ColoredBlock.init(x: 0, y: 0, colorIndex: 5)); break
+            default:
+                break
+            }
+            
+            if(blockMenuButtons[i] != nil) {
+                blockMenuButtons[i]?.setHitboxPosition(x: Double(blockMenu.position.x) + x, y: Double(blockMenu.position.y) + y, width: blockButtonSize * Board.blockSize, height: blockButtonSize * Board.blockSize)
+                blockBox.addChild((blockMenuButtons[i]?.sprite)!)
             }
         }
         
-        currentBlockButton = EditorButton.init(x: -Int(width/2) + border, y: -Int(height/2) + border, width: Int(Board.defaultBlockSize), height: Int(Board.defaultBlockSize), leniency: border/2, type: 0, colorIndex: -99, btext: "")
-        for s in currentBlockButton.sprite {
-            drawNode.addChild(s)
-        }
-        
-        switchLayerButton = EditorButton.init(x: -Int(width/2)+border, y: -Int(height/2) + (border*2) + Int(Board.defaultBlockSize), width: Int(Board.defaultBlockSize), height: Int(Board.defaultBlockSize), leniency: border/2, type: 4, colorIndex: -1, btext: "B")
-        for s in switchLayerButton.sprite {
-            drawNode.addChild(s)
-        }
-        
-        drawNode.addChild(currentBlockIcon)
-        loadCurrentIcon()
         
         
-        rotateLeftButton = EditorButton.init(x: Int(width/2)-((buttonSize+border)*2), y: -Int(height/2)+border, width: buttonSize, height: buttonSize, leniency: border/2, type: 2, colorIndex: 0, btext: "")
-        rotateRightButton = EditorButton.init(x: Int(width/2)-(buttonSize+border), y: -Int(height/2)+border, width: buttonSize, height: buttonSize, leniency: border/2, type: 2, colorIndex: 1, btext: "")
-        for s in rotateLeftButton.sprite {
-            drawNode.addChild(s)
-        }
-        for s in rotateRightButton.sprite {
-            drawNode.addChild(s)
-        }
+        triangleMenu = SKNode.init()
+        triangleMenu.zPosition = 10
+        triangleMenu.position = CGPoint(x: (GameState.screenWidth / -2) + CGFloat(blockButtonBorder * Board.blockSize), y: (GameState.screenHeight / 2) - CGFloat(((blockButtonBorder * 2) + blockWindowHeight) * Board.blockSize))
         
-        settingsButton = EditorButton.init(x: Int(width/2)-Int(Double(buttonSize)*1.5)-border, y: Int(height/2)-border-Int(Double(buttonSize)*1.5), width: Int(Double(buttonSize)*1.5), height: Int(Double(buttonSize)*1.5), leniency: border, type: 4, colorIndex: -1, btext: "S")
-        for s in settingsButton.sprite {
-            drawNode.addChild(s)
-        }
+        let triangleBox = SKShapeNode.init(rect: CGRect.init(x: (blockWindowWidth * 0) * Board.blockSize, y: (blockWindowHeight / -1) * Board.blockSize, width: blockWindowWidth * Board.blockSize, height: blockWindowHeight * Board.blockSize), cornerRadius: 0)
+        triangleBox.strokeColor = UIColor.init(white: 0.4, alpha: 1.0)
+        triangleBox.lineWidth = 3
+        triangleBox.fillColor = UIColor.black
+        triangleBox.zPosition = 1
+        triangleMenu.addChild(triangleBox)
+        drawNode.addChild(triangleMenu)
         
-        invertButton = EditorButton.init(x: Int(width/2)-(buttonSize+border), y: -Int(height/2)+(2*border)+buttonSize, width: buttonSize, height: buttonSize, leniency: border/2, type: 4, colorIndex: -1, btext: "I")
-        for s in invertButton.sprite {
-            drawNode.addChild(s)
-        }
+        triangleMenuOpenButton = EditorMenuOpenButton.init(x: blockWindowWidth * Board.blockSize, y: (blockWindowHeight / -2) * Board.blockSize, height: blockWindowHeight * Board.blockSize)
+        triangleMenuOpenButton.setHitboxPosition(x: Double(triangleMenu.position.x) + blockWindowWidth * Board.blockSize, y: Double(triangleMenu.position.y) + (blockWindowHeight / -2) * Board.blockSize, width: blockWindowHeight * Board.blockSize, height: blockWindowHeight * Board.blockSize)
+        triangleMenu.addChild(triangleMenuOpenButton.sprite)
         
-        drawNode.addChild(menu)
-        menu.alpha = 0.0
-        menu.zPosition = 120
+        let triangleMenuLabel = SKLabelNode.init(text: "TRIANGLES")
+        triangleMenuLabel.fontName = "Menlo-BoldItalic"
+        triangleMenuLabel.fontColor = UIColor.init(white: 0.9, alpha: 1.0)
+        triangleMenuLabel.fontSize = CGFloat(floor(blockButtonSize * Board.blockSize * 0.42))
+        triangleMenuLabel.position.x += CGFloat(blockButtonSize * Board.blockSize * 0.53)
+        triangleMenuLabel.zRotation = CGFloat(3.14159 / 2)
+        triangleMenuLabel.zPosition = 4
+        triangleMenuOpenButton.sprite.addChild(triangleMenuLabel)
         
-        let screenBlur = SKShapeNode.init(rect: CGRect.init(x: -(width/2), y: -(height/2), width: width, height: height))
-        screenBlur.fillColor = UIColor.init(red: 0.0, green: 0.0, blue: 0.0, alpha: 0.4)
-        screenBlur.strokeColor = UIColor.clear
-        menu.addChild(screenBlur)
+        triangleMenuButtons = [nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil]
         
-        
-        let bwidth = (0.60*Double(width))
-        let bheight = (0.13*Double(height))
-        let menuBorder = Int(Double(border) * 0.7)
-        let numMenuItems = 6.0
-        
-        let temp = (Double(menuBorder)*(numMenuItems / 2.0))
-        let top = temp + (bheight*((numMenuItems-2) / 2.0))
-        
-        var itemIndex = 0.0
-        
-        save = EditorButton.init(x: -Int(bwidth/2.0), y: Int(top - (itemIndex * (bheight + Double(menuBorder)))), width: Int(bwidth), height: Int(bheight), leniency: menuBorder, type: 3, colorIndex: 0, btext: "Save")
-        
-        itemIndex += 1
-        copyToClipboard = EditorButton.init(x: -Int(bwidth/2.0), y: Int(top - (itemIndex * (bheight + Double(menuBorder)))), width: Int(bwidth), height: Int(bheight), leniency: menuBorder, type: 3, colorIndex: 0, btext: "Copy to Clipboard")
-        
-        itemIndex += 1
-        loadFromClipboard = EditorButton.init(x: -Int(bwidth/2.0), y: Int(top - (itemIndex * (bheight + Double(menuBorder)))), width: Int(bwidth), height: Int(bheight), leniency: menuBorder, type: 3, colorIndex: 0, btext: "Load from Clipboard")
-        loadFromClipboard.sprite[1].position = CGPoint(x: -9999, y: -9999)
-        
-        itemIndex += 1
-        reset = EditorButton.init(x: -Int(bwidth/2.0), y: Int(top - (itemIndex * (bheight + Double(menuBorder)))), width: Int(bwidth), height: Int(bheight), leniency: menuBorder, type: 3, colorIndex: 0, btext: "Reset")
-        reset.sprite[1].position = CGPoint(x: -9999, y: -9999)
-        
-        itemIndex += 1
-        play = EditorButton.init(x: -Int(bwidth/2.0), y: Int(top - (itemIndex * (bheight + Double(menuBorder)))), width: Int(bwidth), height: Int(bheight), leniency: menuBorder, type: 3, colorIndex: 0, btext: "Play")
-        play.sprite[1].position = CGPoint(x: -9999, y: -9999)
-        
-        itemIndex += 1
-        quit = EditorButton.init(x: -Int(bwidth/2.0), y: Int(top - (itemIndex * (bheight + Double(menuBorder)))), width: Int(bwidth), height: Int(bheight), leniency: menuBorder, type: 3, colorIndex: 0, btext: "Quit")
-        quit.sprite[1].position = CGPoint(x: -9999, y: -9999)
-        
-        for s in save.sprite {
-            menu.addChild(s)
-        }
-        for s in copyToClipboard.sprite {
-            menu.addChild(s)
-        }
-        for s in loadFromClipboard.sprite {
-            menu.addChild(s)
-        }
-        for s in reset.sprite {
-            menu.addChild(s)
-        }
-        for s in play.sprite {
-            menu.addChild(s)
-        }
-        for s in quit.sprite {
-            menu.addChild(s)
-        }*/
-    }
-    
-    class func loadCurrentIcon() {
-        /*currentBlockIcon.removeFromParent()
-        
-        if(layerNum == 0) {
-            switch(iconType) {
+        for i in 0...11 {
+            var x = Double(i % 6)
+            var y = Double(Int(i / 6))
+            x = (((x + 0.5) * blockButtonSize) + ((x + 1) * blockButtonBorder)) * Board.blockSize
+            y = (((y + 0.5) * blockButtonSize) + ((y + 1) * blockButtonBorder)) * -Board.blockSize
+            switch(i) {
             case 0:
-                currentBlockIcon = SKShapeNode.init(rect: CGRect.init(x: -Int(UIScreen.main.bounds.width/2) + border, y: -Int(UIScreen.main.bounds.height/2) + border, width: Int(Board.defaultBlockSize), height: Int(Board.defaultBlockSize)))
+                triangleMenuButtons[i] = EditorBlockButton.init(x: x, y: y, size: blockButtonSize, block: ExitBlock.init(x: 0, y: 0, direction: 0)); break
+            case 1:
+                triangleMenuButtons[i] = EditorBlockButton.init(x: x, y: y, size: blockButtonSize, block: InvertBlock.init(x: 0, y: 0, direction: 0)); break
+            case 6:
+                triangleMenuButtons[i] = EditorBlockButton.init(x: x, y: y, size: blockButtonSize, block: ColorChangeBlock.init(x: 0, y: 0, colorIndex: 0, direction: 0)); break
+            case 7:
+                triangleMenuButtons[i] = EditorBlockButton.init(x: x, y: y, size: blockButtonSize, block: ColorChangeBlock.init(x: 0, y: 0, colorIndex: 1, direction: 0)); break
+            case 8:
+                triangleMenuButtons[i] = EditorBlockButton.init(x: x, y: y, size: blockButtonSize, block: ColorChangeBlock.init(x: 0, y: 0, colorIndex: 2, direction: 0)); break
+            case 9:
+                triangleMenuButtons[i] = EditorBlockButton.init(x: x, y: y, size: blockButtonSize, block: ColorChangeBlock.init(x: 0, y: 0, colorIndex: 3, direction: 0)); break
+            case 10:
+                triangleMenuButtons[i] = EditorBlockButton.init(x: x, y: y, size: blockButtonSize, block: ColorChangeBlock.init(x: 0, y: 0, colorIndex: 4, direction: 0)); break
+            case 11:
+                triangleMenuButtons[i] = EditorBlockButton.init(x: x, y: y, size: blockButtonSize, block: ColorChangeBlock.init(x: 0, y: 0, colorIndex: 5, direction: 0)); break
+            default:
+                break
+            }
+            
+            if(triangleMenuButtons[i] != nil) {
+                triangleMenuButtons[i]?.setHitboxPosition(x: Double(triangleMenu.position.x) + x, y: Double(triangleMenu.position.y) + y, width: blockButtonSize * Board.blockSize, height: blockButtonSize * Board.blockSize)
+                triangleBox.addChild((triangleMenuButtons[i]?.sprite)!)
+            }
+        }
+        
+        
+        
+        mainMenu = SKNode.init()
+        mainMenu.zPosition = 20
+        mainMenu.position = CGPoint(x: (GameState.screenWidth / 2) - CGFloat(menuButtonBorder * Board.blockSize), y: (GameState.screenHeight / 2) - CGFloat(menuButtonBorder * Board.blockSize))
+        
+        let menuBox = SKShapeNode.init(rect: CGRect.init(x: (menuWindowWidth * 0) * Board.blockSize, y: (menuWindowHeight / -1) * Board.blockSize, width: menuWindowWidth * Board.blockSize, height: menuWindowHeight * Board.blockSize), cornerRadius: 0)
+        menuBox.strokeColor = UIColor.init(white: 0.4, alpha: 1.0)
+        menuBox.lineWidth = 3
+        menuBox.fillColor = UIColor.black
+        menuBox.zPosition = 1
+        mainMenu.addChild(menuBox)
+        drawNode.addChild(mainMenu)
+        
+        mainMenuOpenButton = EditorMenuOpenButton.init(x: 0, y: (menuWindowHeight / -2) * Board.blockSize, height: menuWindowHeight * Board.blockSize, width: blockWindowHeight * 0.6 * Board.blockSize)
+        mainMenuOpenButton.setHitboxPosition(x: Double(mainMenu.position.x) - menuWindowWidth * Board.blockSize, y: Double(mainMenu.position.y) + (menuWindowHeight / -2) * Board.blockSize, width: blockButtonSize * Board.blockSize, height: menuWindowHeight * Board.blockSize)
+        mainMenu.addChild(mainMenuOpenButton.sprite)
+        
+        let mainMenuLabel = SKLabelNode.init(text: "MENU")
+        mainMenuLabel.fontName = "Menlo-BoldItalic"
+        mainMenuLabel.fontColor = UIColor.init(white: 0.9, alpha: 1.0)
+        mainMenuLabel.fontSize = CGFloat(floor(blockButtonSize * Board.blockSize * 0.42))
+        mainMenuLabel.position.x -= CGFloat(blockButtonSize * Board.blockSize * 0.53)
+        mainMenuLabel.zRotation = CGFloat(3.14159 / -2)
+        mainMenuLabel.zPosition = 4
+        mainMenuOpenButton.sprite.addChild(mainMenuLabel)
+        
+        mainMenuButtons = [nil, nil, nil, nil, nil, nil, nil, nil, nil]
+        
+        for i in 0...numMenuButtons-1 {
+            var x = 0.0
+            var y = Double(i)
+            x = (((x + 0.5) * menuButtonWidth) + ((x + 0.0) * menuButtonBorder) + ((menuWindowWidth - menuButtonWidth) / 2)) * Board.blockSize
+            y = (((y + 0.5) * menuButtonHeight) + ((y + 1) * menuButtonBorder)) * -Board.blockSize
+            switch(i) {
+            case 0:
+                mainMenuButtons[i] = EditorMainMenuButton.init(x: x, y: y, width: menuButtonWidth * Board.blockSize, height: menuButtonHeight * Board.blockSize, text: "BUTTON1")
                 break
             case 1:
-                currentBlockIcon = SKShapeNode.init(path: getTrianglePath(corner: CGPoint(x: -Int(UIScreen.main.bounds.width/2) + border, y: -Int(UIScreen.main.bounds.height/2) + border), rotation: 0, size: Double(Board.defaultBlockSize)))
+                mainMenuButtons[i] = EditorMainMenuButton.init(x: x, y: y, width: menuButtonWidth * Board.blockSize, height: menuButtonHeight * Board.blockSize, text: "BUTTON2")
+                break
+            case 2:
+                mainMenuButtons[i] = EditorMainMenuButton.init(x: x, y: y, width: menuButtonWidth * Board.blockSize, height: menuButtonHeight * Board.blockSize, text: "BUTTON3")
+                break
+            case 3:
+                mainMenuButtons[i] = EditorMainMenuButton.init(x: x, y: y, width: menuButtonWidth * Board.blockSize, height: menuButtonHeight * Board.blockSize, text: "BUTTON4")
                 break
             default:
                 break
             }
-        } else if(layerNum == 1) {
-            if(drawColor < -1) {
-                let path1 = UIBezierPath.init()
-                let size = 0.08
-                path1.move(to: CGPoint(x: 0, y: Double(Board.defaultBlockSize)*size))
-                path1.addLine(to: CGPoint(x: Double(Board.defaultBlockSize)*size, y: 0))
-                path1.addLine(to: CGPoint(x: Double(Board.defaultBlockSize)*(1), y: Double(Board.defaultBlockSize)*(1-size)))
-                path1.addLine(to: CGPoint(x: Double(Board.defaultBlockSize)*(1-size), y: Double(Board.defaultBlockSize)*(1)))
-                
-                let line1 = SKShapeNode.init(path: path1.cgPath)
-                line1.fillColor = UIColor.red
-                line1.strokeColor = UIColor.clear
-                line1.zPosition = 50
-                
-                let path2 = UIBezierPath.init()
-                path2.move(to: CGPoint(x: Double(Board.defaultBlockSize), y: Double(Board.defaultBlockSize)*size))
-                path2.addLine(to: CGPoint(x: Double(Board.defaultBlockSize)*(1-size), y: 0))
-                path2.addLine(to: CGPoint(x: Double(Board.defaultBlockSize)*(0), y: Double(Board.defaultBlockSize)*(1-size)))
-                path2.addLine(to: CGPoint(x: Double(Board.defaultBlockSize)*(size), y: Double(Board.defaultBlockSize)*(1)))
-                
-                let line2 = SKShapeNode.init(path: path2.cgPath)
-                line2.fillColor = UIColor.red
-                line2.strokeColor = UIColor.clear
-                
-                line1.position = CGPoint(x: -Int(UIScreen.main.bounds.width/2) + border, y: -Int(UIScreen.main.bounds.height/2) + border)
-                currentBlockIcon = line1
-                line1.addChild(line2)
-                currentBlockIcon.zPosition = 100
-            } else {
-                switch(iconType) {
-                case 0:
-                    currentBlockIcon = SKShapeNode.init(rect: CGRect.init(x: -Int(UIScreen.main.bounds.width/2) + border, y: -Int(UIScreen.main.bounds.height/2) + border, width: Int(Board.defaultBlockSize), height: Int(Board.defaultBlockSize)))
-                    let arrow1 = SKShapeNode.init(path: getTrianglePath(corner: CGPoint(x: Double(Board.defaultBlockSize)*(1/3.0), y: Double(Board.defaultBlockSize)*((1/2.0) + (1/18.0))), rotation: 0.0, size: Double(Board.defaultBlockSize)*(1/3.0)))
-                    arrow1.position = CGPoint(x: -Int(UIScreen.main.bounds.width/2) + border, y: -Int(UIScreen.main.bounds.height/2) + border)
-                    arrow1.strokeColor = UIColor.black
-                    arrow1.fillColor = UIColor.clear
-                    arrow1.lineWidth = 2.0
-                    let arrow2 = SKShapeNode.init(path: getTrianglePath(corner: CGPoint(x: Double(Board.defaultBlockSize)*(2/3.0), y: Double(Board.defaultBlockSize)*((1/2.0) - (1/18.0))), rotation: 180.0, size: Double(Board.defaultBlockSize)*(1/3.0)))
-                    arrow2.position = CGPoint(x: -Int(UIScreen.main.bounds.width/2) + border, y: -Int(UIScreen.main.bounds.height/2) + border)
-                    arrow2.strokeColor = UIColor.black
-                    arrow2.fillColor = UIColor.clear
-                    arrow2.lineWidth = 2.0
-                    currentBlockIcon.addChild(arrow1)
-                    currentBlockIcon.addChild(arrow2)
-                    break
-                case 1:
-                    currentBlockIcon = SKShapeNode.init(rect: CGRect.init(x: -Int(UIScreen.main.bounds.width/2) + border, y: -Int(UIScreen.main.bounds.height/2) + border, width: Int(Board.defaultBlockSize), height: Int(Board.defaultBlockSize)))
-                    let arrow1 = SKShapeNode.init(path: getTrianglePath(corner: CGPoint(x: Double(Board.defaultBlockSize)*((1/2.0) - (1/18.0)), y: Double(Board.defaultBlockSize)*(1/3.0)), rotation: 90.0, size: Double(Board.defaultBlockSize)*(1/3.0)))
-                    arrow1.position = CGPoint(x: -Int(UIScreen.main.bounds.width/2) + border, y: -Int(UIScreen.main.bounds.height/2) + border)
-                    arrow1.strokeColor = UIColor.black
-                    arrow1.fillColor = UIColor.clear
-                    arrow1.lineWidth = 2.0
-                    let arrow2 = SKShapeNode.init(path: getTrianglePath(corner: CGPoint(x: Double(Board.defaultBlockSize)*((1/2.0) + (1/18.0)), y: Double(Board.defaultBlockSize)*(2/3.0)), rotation: -90.0, size: Double(Board.defaultBlockSize)*(1/3.0)))
-                    arrow2.position = CGPoint(x: -Int(UIScreen.main.bounds.width/2) + border, y: -Int(UIScreen.main.bounds.height/2) + border)
-                    arrow2.strokeColor = UIColor.black
-                    arrow2.fillColor = UIColor.clear
-                    arrow2.lineWidth = 2.0
-                    currentBlockIcon.addChild(arrow1)
-                    currentBlockIcon.addChild(arrow2)
-                    break
-                default:
-                    break
-                }
+            
+            if(mainMenuButtons[i] != nil) {
+                mainMenuButtons[i]?.setHitboxPosition(x: Double(mainMenu.position.x) + x, y: Double(mainMenu.position.y) + y, width: menuButtonWidth * Board.blockSize, height: menuButtonHeight * Board.blockSize)
+                menuBox.addChild((mainMenuButtons[i]?.sprite)!)
             }
         }
         
-        if(!(layerNum == 1 && drawColor < -1)) {
-            currentBlockIcon.fillColor = loadColor(colorIndex: drawColor)
-            currentBlockIcon.strokeColor = UIColor.white
-            currentBlockIcon.lineWidth = 3
-            currentBlockIcon.zPosition = 100
-        }
-        if(layerNum == 0 && iconType == 0 && drawColor == -4) {
-            for c in colors {
-                if(c.colorIndex == -4) {
-                    currentBlockIcon.fillColor = c.color
-                }
-            }
-        }
         
-        drawNode.addChild(currentBlockIcon)*/
+        
+        let currentBlockSize = 1.0
+        let cornerSize = 0.1
+        currentBlockIcon = SKShapeNode.init(rect: CGRect(x: (Board.blockSize * currentBlockSize) / -2, y: (Board.blockSize * currentBlockSize) / -2, width: Board.blockSize * currentBlockSize, height: Board.blockSize * currentBlockSize), cornerRadius: CGFloat(Board.blockSize * currentBlockSize * cornerSize))
+        currentBlockIcon.position = CGPoint(x: (GameState.screenWidth / 2) - CGFloat(Board.blockSize * ((currentBlockSize / 2) + blockButtonBorder)), y: (GameState.screenHeight / -2) + CGFloat(Board.blockSize * ((currentBlockSize / 2) + blockButtonBorder)))
+        (currentBlockIcon as! SKShapeNode).fillColor = UIColor.black
+        (currentBlockIcon as! SKShapeNode).strokeColor = UIColor.init(white: 0.4, alpha: 1.0)
+        (currentBlockIcon as! SKShapeNode).lineWidth = 3
+        currentBlockIcon.zPosition = 0
+        
+        drawNode.addChild(currentBlockIcon)
     }
     
     class func loadColor(colorIndex: Int) -> UIColor {
@@ -1222,6 +1000,7 @@ class EditorManager {
         code += "m"
         code += "defaultName"
         
-        return code
-    }*/
-}*/
+        return code*/
+        return ""
+    }
+}

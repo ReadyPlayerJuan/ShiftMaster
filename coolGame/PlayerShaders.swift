@@ -54,6 +54,7 @@ class PlayerShaders {
                     "" +
                     "float waveNum = floor(progress);" +
                     "float wavePct = progress - waveNum;" +
+                    "wavePct = 1 - ((cos(wavePct * 3.14159) + 1) / 2);" +
                     "if(mod(waveNum, 2.0) == 1.0) {" +
                     "   wavePct = 1.0 - wavePct;" +
                     "}" +
