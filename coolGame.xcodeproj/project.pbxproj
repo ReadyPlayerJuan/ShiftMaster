@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		71015FB51EFD64F500CE3109 /* EditorButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71015FB41EFD64F500CE3109 /* EditorButton.swift */; };
+		71015FB71EFD65E100CE3109 /* EditorMenuOpenButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71015FB61EFD65E100CE3109 /* EditorMenuOpenButton.swift */; };
+		71015FB91F01C73300CE3109 /* EditorMainMenuButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71015FB81F01C73000CE3109 /* EditorMainMenuButton.swift */; };
 		7105A1611E6A184B005B3487 /* GameScene.sks in Resources */ = {isa = PBXBuildFile; fileRef = 7105A1601E6A184B005B3487 /* GameScene.sks */; };
 		7105A1631E6A185C005B3487 /* MenuScene.sks in Resources */ = {isa = PBXBuildFile; fileRef = 7105A1621E6A185C005B3487 /* MenuScene.sks */; };
 		7105A1651E6A186E005B3487 /* EditorScene.sks in Resources */ = {isa = PBXBuildFile; fileRef = 7105A1641E6A186E005B3487 /* EditorScene.sks */; };
@@ -20,6 +23,10 @@
 		713A8C6F1EBD574D009A1E48 /* shift.wav in Resources */ = {isa = PBXBuildFile; fileRef = 713A8C6E1EBD574D009A1E48 /* shift.wav */; };
 		713A8C721EBD5B03009A1E48 /* shiftLoop.wav in Resources */ = {isa = PBXBuildFile; fileRef = 713A8C711EBD5B03009A1E48 /* shiftLoop.wav */; };
 		713A8C741EBD5B31009A1E48 /* shiftIntro.wav in Resources */ = {isa = PBXBuildFile; fileRef = 713A8C731EBD5B31009A1E48 /* shiftIntro.wav */; };
+		7140AAD81ECF49CF0031C505 /* SolidBlock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7140AAD71ECF49CF0031C505 /* SolidBlock.swift */; };
+		7140AADA1ECF49DE0031C505 /* NonsolidBlock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7140AAD91ECF49DE0031C505 /* NonsolidBlock.swift */; };
+		7140AADC1ECF49FA0031C505 /* ColoredBlock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7140AADB1ECF49F90031C505 /* ColoredBlock.swift */; };
+		7140AADE1ECF4C1A0031C505 /* BlockShaders.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7140AADD1ECF4C1A0031C505 /* BlockShaders.swift */; };
 		715AB9291E78B3CA0018FC9F /* Camera.swift in Sources */ = {isa = PBXBuildFile; fileRef = 715AB9281E78B3CA0018FC9F /* Camera.swift */; };
 		715C1DB51EBFFBF700791D83 /* GainAbilityAnimation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 715C1DB41EBFFBF700791D83 /* GainAbilityAnimation.swift */; };
 		716D99991E60F12300822464 /* MenuButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 716D99981E60F12300822464 /* MenuButton.swift */; };
@@ -55,7 +62,14 @@
 		71CD0D7D1E50DFCA001198AB /* LightSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71CD0D7C1E50DFCA001198AB /* LightSource.swift */; };
 		71CD0D881E523094001198AB /* EditorManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71CD0D871E523094001198AB /* EditorManager.swift */; };
 		71CD0D8A1E523118001198AB /* Memory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71CD0D891E523118001198AB /* Memory.swift */; };
-		71CD0D8C1E523859001198AB /* EditorButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71CD0D8B1E523859001198AB /* EditorButton.swift */; };
+		71CD0D8C1E523859001198AB /* EditorBlockButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71CD0D8B1E523859001198AB /* EditorBlockButton.swift */; };
+		71D57F611EE1E0B700A9BF2C /* PlayerShaders.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71D57F601EE1E0B700A9BF2C /* PlayerShaders.swift */; };
+		71D57F641EE1E9C200A9BF2C /* PostShaders.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71D57F631EE1E9C200A9BF2C /* PostShaders.swift */; };
+		71D57F661EE1EF9400A9BF2C /* ColorChangeBlock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71D57F651EE1EF9400A9BF2C /* ColorChangeBlock.swift */; };
+		71D57F681EE3147E00A9BF2C /* ExitBlock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71D57F671EE3147E00A9BF2C /* ExitBlock.swift */; };
+		71D57F6A1EE39B3200A9BF2C /* HazardBlock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71D57F691EE39B3200A9BF2C /* HazardBlock.swift */; };
+		71D57F6E1EE4E0A800A9BF2C /* InvertBlock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71D57F6D1EE4E0A700A9BF2C /* InvertBlock.swift */; };
+		71DE8E201EF48E6000719C03 /* ShadersMaster.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71DE8E1F1EF48E6000719C03 /* ShadersMaster.swift */; };
 		71EA931D1E7E121300BBCA67 /* PlayerGhost.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71EA931C1E7E121300BBCA67 /* PlayerGhost.swift */; };
 /* End PBXBuildFile section */
 
@@ -77,6 +91,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		71015FB41EFD64F500CE3109 /* EditorButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EditorButton.swift; sourceTree = "<group>"; };
+		71015FB61EFD65E100CE3109 /* EditorMenuOpenButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EditorMenuOpenButton.swift; sourceTree = "<group>"; };
+		71015FB81F01C73000CE3109 /* EditorMainMenuButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EditorMainMenuButton.swift; sourceTree = "<group>"; };
 		7105A1601E6A184B005B3487 /* GameScene.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = GameScene.sks; sourceTree = "<group>"; };
 		7105A1621E6A185C005B3487 /* MenuScene.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = MenuScene.sks; sourceTree = "<group>"; };
 		7105A1641E6A186E005B3487 /* EditorScene.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = EditorScene.sks; sourceTree = "<group>"; };
@@ -90,6 +107,10 @@
 		713A8C6E1EBD574D009A1E48 /* shift.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = shift.wav; sourceTree = "<group>"; };
 		713A8C711EBD5B03009A1E48 /* shiftLoop.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = shiftLoop.wav; sourceTree = "<group>"; };
 		713A8C731EBD5B31009A1E48 /* shiftIntro.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = shiftIntro.wav; sourceTree = "<group>"; };
+		7140AAD71ECF49CF0031C505 /* SolidBlock.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SolidBlock.swift; sourceTree = "<group>"; };
+		7140AAD91ECF49DE0031C505 /* NonsolidBlock.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NonsolidBlock.swift; sourceTree = "<group>"; };
+		7140AADB1ECF49F90031C505 /* ColoredBlock.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ColoredBlock.swift; sourceTree = "<group>"; };
+		7140AADD1ECF4C1A0031C505 /* BlockShaders.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BlockShaders.swift; path = coolGame/BlockShaders.swift; sourceTree = "<group>"; };
 		715AB9281E78B3CA0018FC9F /* Camera.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Camera.swift; sourceTree = "<group>"; };
 		715C1DB41EBFFBF700791D83 /* GainAbilityAnimation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GainAbilityAnimation.swift; sourceTree = "<group>"; };
 		716D99981E60F12300822464 /* MenuButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MenuButton.swift; sourceTree = "<group>"; };
@@ -131,7 +152,14 @@
 		71CD0D7C1E50DFCA001198AB /* LightSource.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LightSource.swift; sourceTree = "<group>"; };
 		71CD0D871E523094001198AB /* EditorManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EditorManager.swift; sourceTree = "<group>"; };
 		71CD0D891E523118001198AB /* Memory.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Memory.swift; sourceTree = "<group>"; };
-		71CD0D8B1E523859001198AB /* EditorButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EditorButton.swift; sourceTree = "<group>"; };
+		71CD0D8B1E523859001198AB /* EditorBlockButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EditorBlockButton.swift; sourceTree = "<group>"; };
+		71D57F601EE1E0B700A9BF2C /* PlayerShaders.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PlayerShaders.swift; path = coolGame/PlayerShaders.swift; sourceTree = "<group>"; };
+		71D57F631EE1E9C200A9BF2C /* PostShaders.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PostShaders.swift; sourceTree = "<group>"; };
+		71D57F651EE1EF9400A9BF2C /* ColorChangeBlock.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ColorChangeBlock.swift; sourceTree = "<group>"; };
+		71D57F671EE3147E00A9BF2C /* ExitBlock.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExitBlock.swift; sourceTree = "<group>"; };
+		71D57F691EE39B3200A9BF2C /* HazardBlock.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HazardBlock.swift; sourceTree = "<group>"; };
+		71D57F6D1EE4E0A700A9BF2C /* InvertBlock.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InvertBlock.swift; sourceTree = "<group>"; };
+		71DE8E1F1EF48E6000719C03 /* ShadersMaster.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ShadersMaster.swift; sourceTree = "<group>"; };
 		71EA931C1E7E121300BBCA67 /* PlayerGhost.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PlayerGhost.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -180,6 +208,55 @@
 				713A8C731EBD5B31009A1E48 /* shiftIntro.wav */,
 			);
 			name = Sounds;
+			sourceTree = "<group>";
+		};
+		7140AAD31ECF3E9D0031C505 /* Entities */ = {
+			isa = PBXGroup;
+			children = (
+				7140AAD61ECF3EE20031C505 /* LightSource */,
+				7140AAD51ECF3EC90031C505 /* Blocks */,
+				7140AAD41ECF3EB80031C505 /* Player */,
+			);
+			name = Entities;
+			path = coolGame;
+			sourceTree = "<group>";
+		};
+		7140AAD41ECF3EB80031C505 /* Player */ = {
+			isa = PBXGroup;
+			children = (
+				71EA931C1E7E121300BBCA67 /* PlayerGhost.swift */,
+				71BB810B1E203B5300024D90 /* Player.swift */,
+				71C37B1D1E2AAC40001F1810 /* PlayerMovement.swift */,
+				71C37B191E281E31001F1810 /* PlayerCCEffect.swift */,
+				71C37B1B1E281ED5001F1810 /* PlayerDeathEffect.swift */,
+			);
+			name = Player;
+			sourceTree = "<group>";
+		};
+		7140AAD51ECF3EC90031C505 /* Blocks */ = {
+			isa = PBXGroup;
+			children = (
+				7140AAD71ECF49CF0031C505 /* SolidBlock.swift */,
+				7140AAD91ECF49DE0031C505 /* NonsolidBlock.swift */,
+				7140AADB1ECF49F90031C505 /* ColoredBlock.swift */,
+				71D57F651EE1EF9400A9BF2C /* ColorChangeBlock.swift */,
+				71D57F671EE3147E00A9BF2C /* ExitBlock.swift */,
+				71D57F691EE39B3200A9BF2C /* HazardBlock.swift */,
+				71D57F6D1EE4E0A700A9BF2C /* InvertBlock.swift */,
+				71BB80FD1E203B5300024D90 /* Block.swift */,
+				715C1DB41EBFFBF700791D83 /* GainAbilityAnimation.swift */,
+				71BB810A1E203B5300024D90 /* MovingBlock.swift */,
+			);
+			name = Blocks;
+			sourceTree = "<group>";
+		};
+		7140AAD61ECF3EE20031C505 /* LightSource */ = {
+			isa = PBXGroup;
+			children = (
+				71CD0D7A1E50DF60001198AB /* LineSegment.swift */,
+				71CD0D7C1E50DFCA001198AB /* LightSource.swift */,
+			);
+			name = LightSource;
 			sourceTree = "<group>";
 		};
 		716D99951E60F05900822464 /* Menu */ = {
@@ -248,6 +325,7 @@
 			children = (
 				71BB81241E208FD100024D90 /* Scenes and Controllers */,
 				71BB81231E208FC200024D90 /* Physics */,
+				71D57F621EE1E99900A9BF2C /* Shaders */,
 				71BB81261E244BED00024D90 /* Stages */,
 				71BB81251E20900800024D90 /* Game Classes */,
 				71BB80D61E2039E700024D90 /* Assets.xcassets */,
@@ -290,6 +368,7 @@
 				71BB81031E203B5300024D90 /* Entity.swift */,
 				71BB81041E203B5300024D90 /* EntityManager.swift */,
 				716D99A11E613B3700822464 /* Particle.swift */,
+				7140AAD31ECF3E9D0031C505 /* Entities */,
 			);
 			name = Physics;
 			path = ..;
@@ -315,16 +394,6 @@
 			children = (
 				71BB81051E203B5300024D90 /* GameState.swift */,
 				715AB9281E78B3CA0018FC9F /* Camera.swift */,
-				71BB810B1E203B5300024D90 /* Player.swift */,
-				71C37B1D1E2AAC40001F1810 /* PlayerMovement.swift */,
-				71C37B191E281E31001F1810 /* PlayerCCEffect.swift */,
-				71C37B1B1E281ED5001F1810 /* PlayerDeathEffect.swift */,
-				71CD0D7C1E50DFCA001198AB /* LightSource.swift */,
-				71CD0D7A1E50DF60001198AB /* LineSegment.swift */,
-				71BB80FD1E203B5300024D90 /* Block.swift */,
-				715C1DB41EBFFBF700791D83 /* GainAbilityAnimation.swift */,
-				71BB810A1E203B5300024D90 /* MovingBlock.swift */,
-				71EA931C1E7E121300BBCA67 /* PlayerGhost.swift */,
 				7105A1661E6A18C9005B3487 /* ShapeLayer.swift */,
 				71BB80FF1E203B5300024D90 /* ColorTheme.swift */,
 			);
@@ -350,9 +419,24 @@
 				7105A1641E6A186E005B3487 /* EditorScene.sks */,
 				71BB81011E203B5300024D90 /* EditorScene.swift */,
 				71CD0D871E523094001198AB /* EditorManager.swift */,
-				71CD0D8B1E523859001198AB /* EditorButton.swift */,
+				71CD0D8B1E523859001198AB /* EditorBlockButton.swift */,
+				71015FB41EFD64F500CE3109 /* EditorButton.swift */,
+				71015FB61EFD65E100CE3109 /* EditorMenuOpenButton.swift */,
+				71015FB81F01C73000CE3109 /* EditorMainMenuButton.swift */,
 			);
 			name = Editor;
+			sourceTree = "<group>";
+		};
+		71D57F621EE1E99900A9BF2C /* Shaders */ = {
+			isa = PBXGroup;
+			children = (
+				71DE8E1F1EF48E6000719C03 /* ShadersMaster.swift */,
+				7140AADD1ECF4C1A0031C505 /* BlockShaders.swift */,
+				71D57F601EE1E0B700A9BF2C /* PlayerShaders.swift */,
+				71D57F631EE1E9C200A9BF2C /* PostShaders.swift */,
+			);
+			name = Shaders;
+			path = ..;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -517,27 +601,38 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				71015FB71EFD65E100CE3109 /* EditorMenuOpenButton.swift in Sources */,
 				71CD0D881E523094001198AB /* EditorManager.swift in Sources */,
 				71CD0D7B1E50DF60001198AB /* LineSegment.swift in Sources */,
 				71BB81161E203B5300024D90 /* InputController.swift in Sources */,
+				71D57F6E1EE4E0A800A9BF2C /* InvertBlock.swift in Sources */,
 				71BB81141E203B5300024D90 /* EntityManager.swift in Sources */,
+				71D57F641EE1E9C200A9BF2C /* PostShaders.swift in Sources */,
 				710FD9B51E771058001961F5 /* InputJoystick.swift in Sources */,
+				71015FB91F01C73300CE3109 /* EditorMainMenuButton.swift in Sources */,
 				716D999C1E60FCE800822464 /* TestingScene.swift in Sources */,
+				71D57F6A1EE39B3200A9BF2C /* HazardBlock.swift in Sources */,
+				71D57F661EE1EF9400A9BF2C /* ColorChangeBlock.swift in Sources */,
 				71BB80D01E2039E700024D90 /* GameScene.swift in Sources */,
 				71C37B1C1E281ED5001F1810 /* PlayerDeathEffect.swift in Sources */,
-				71CD0D8C1E523859001198AB /* EditorButton.swift in Sources */,
+				71CD0D8C1E523859001198AB /* EditorBlockButton.swift in Sources */,
 				71BB81191E203B5300024D90 /* MenuViewController.swift in Sources */,
 				71BB811B1E203B5300024D90 /* Player.swift in Sources */,
+				7140AADA1ECF49DE0031C505 /* NonsolidBlock.swift in Sources */,
+				71015FB51EFD64F500CE3109 /* EditorButton.swift in Sources */,
 				715AB9291E78B3CA0018FC9F /* Camera.swift in Sources */,
 				71CD0D8A1E523118001198AB /* Memory.swift in Sources */,
 				71BB810D1E203B5300024D90 /* Block.swift in Sources */,
+				7140AAD81ECF49CF0031C505 /* SolidBlock.swift in Sources */,
 				71BB810E1E203B5300024D90 /* Board.swift in Sources */,
 				71BB812C1E248E2B00024D90 /* StageSet2.swift in Sources */,
 				71BB81181E203B5300024D90 /* MenuScene.swift in Sources */,
 				71BB811A1E203B5300024D90 /* MovingBlock.swift in Sources */,
 				715C1DB51EBFFBF700791D83 /* GainAbilityAnimation.swift in Sources */,
+				71D57F681EE3147E00A9BF2C /* ExitBlock.swift in Sources */,
 				71BB810F1E203B5300024D90 /* ColorTheme.swift in Sources */,
 				71BB81281E244C1200024D90 /* Stage.swift in Sources */,
+				71D57F611EE1E0B700A9BF2C /* PlayerShaders.swift in Sources */,
 				71BB81131E203B5300024D90 /* Entity.swift in Sources */,
 				71BB81111E203B5300024D90 /* EditorScene.swift in Sources */,
 				716D99991E60F12300822464 /* MenuButton.swift in Sources */,
@@ -545,11 +640,14 @@
 				71BB80CA1E2039E700024D90 /* AppDelegate.swift in Sources */,
 				710FD9B71E7761C2001961F5 /* InputButton.swift in Sources */,
 				7105A16F1E6EF47D005B3487 /* StageSet3.swift in Sources */,
+				7140AADC1ECF49FA0031C505 /* ColoredBlock.swift in Sources */,
 				7105A1671E6A18C9005B3487 /* ShapeLayer.swift in Sources */,
 				71BB81151E203B5300024D90 /* GameState.swift in Sources */,
 				71C37B1A1E281E32001F1810 /* PlayerCCEffect.swift in Sources */,
+				7140AADE1ECF4C1A0031C505 /* BlockShaders.swift in Sources */,
 				71EA931D1E7E121300BBCA67 /* PlayerGhost.swift in Sources */,
 				71BB812A1E244F6900024D90 /* StageSet1.swift in Sources */,
+				71DE8E201EF48E6000719C03 /* ShadersMaster.swift in Sources */,
 				713A8C6D1EBD4DC7009A1E48 /* Sounds.swift in Sources */,
 				71CD0D7D1E50DFCA001198AB /* LightSource.swift in Sources */,
 				716D99A21E613B3700822464 /* Particle.swift in Sources */,

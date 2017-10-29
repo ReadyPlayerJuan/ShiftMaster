@@ -36,7 +36,7 @@ class InputJoystick {
         sprite.strokeColor = UIColor.clear
         sprite.fillColor = InputController.buttonColor
         sprite.alpha = alpha
-        sprite.zPosition = 500
+        sprite.zPosition = 0
         sprite.position = CGPoint.init(x: x, y: y)
         
         
@@ -77,7 +77,7 @@ class InputJoystick {
             if(InputController.prevTouches.count > 0) {
                 for i in 0...InputController.prevTouches.count-1 {
                     if(i < InputController.currentTouches.count) {
-                        if(InputController.prevTouches[i].equalTo(prevJoystickTouch!)) {
+                        if(InputController.currentTouches[i].equalTo(prevJoystickTouch!)) {
                             finished = true
                             prevJoystickTouch = InputController.currentTouches[i]
                             

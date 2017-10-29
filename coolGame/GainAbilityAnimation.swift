@@ -8,7 +8,7 @@
 
 import Foundation
 import SpriteKit
-
+/*
 extension Block {
     func updateGainAbilityAnimation() {
         
@@ -636,4 +636,4 @@ extension Block {
         
         return [(rainbow[currentColor][0] * CGFloat(1-colorProgression))+(rainbow[nextColor][0] * CGFloat(colorProgression)), (rainbow[currentColor][1] * CGFloat(1-colorProgression))+(rainbow[nextColor][1] * CGFloat(colorProgression)), (rainbow[currentColor][2] * CGFloat(1-colorProgression))+(rainbow[nextColor][2] * CGFloat(colorProgression))]
     }
-}
+}*/

@@ -18,7 +18,19 @@ class Entity {
     var isDangerous = false
     var autoRotate = true
     
+    var isInactive = false
+    var invertExclusive: Bool = false
+    var invertVisible: Bool = false
+    
     var name = ""
+    var hitboxType = HitboxType.none
+    
+    enum HitboxType {
+        case none
+        case block
+        case movingBlock
+        case player
+    }
     
     var controllable = false
     var nextX = 0.0, nextY = 0.0
@@ -28,27 +40,79 @@ class Entity {
     var ID: Int = 0
     
     var nearbyEntities: [Entity] = []
-    var sprite: SKShapeNode = SKShapeNode()
+    
+    var defaultSpriteColor: UIColor = UIColor.purple
+    var sprite: SKNode!
+    var shader: SKShader!
     
     init() {
         ID = EntityManager.getID()
     }
     
-    func rotate(direction: String) {}
-    func duplicate() -> Entity {
-        return Entity.init()
-    }
-    
     func update(delta: TimeInterval) {
         nextX = x + xVel
         nextY = y + yVel
+        
+        if(invertExclusive && ((GameState.inverted && !invertVisible) || (!GameState.inverted && invertVisible))) {
+            sprite.alpha = 0.0
+            isInactive = true
+        } else {
+            sprite.alpha = 1.0
+            isInactive = false
+        }
     }
     func checkForCollision() {}
     func move() {
         x = nextX
         y = nextY
-        updateSprite()
     }
+    
+    func updateAttributes() {}
+    func load() {}
+    
+    func gameActionFirstFrame(_ action: GameAction) {
+        switch(action) {
+        case .rotateLeft:
+            let newX = y
+            let newY = Double(Board.boardHeight) - x - 1
+            nextX = newX
+            nextY = newY
+            x = nextX
+            y = nextY
+            sprite.position = CGPoint(x: x * Board.blockSize, y: -y * Board.blockSize)
+            break
+        case .rotateRight:
+            let newX = Double(Board.boardWidth) - y - 1
+            let newY = x
+            nextX = newX
+            nextY = newY
+            x = nextX
+            y = nextY
+            sprite.position = CGPoint(x: x * Board.blockSize, y: -y * Board.blockSize)
+            break
+        case .rotateLeftInstant:
+            let newX = y
+            let newY = Double(Board.boardHeight) - x - 1
+            nextX = newX
+            nextY = newY
+            x = nextX
+            y = nextY
+            sprite.position = CGPoint(x: x * Board.blockSize, y: -y * Board.blockSize)
+            break
+        case .rotateRightInstant:
+            let newX = Double(Board.boardWidth) - y - 1
+            let newY = x
+            nextX = newX
+            nextY = newY
+            x = nextX
+            y = nextY
+            sprite.position = CGPoint(x: x * Board.blockSize, y: -y * Board.blockSize)
+            break
+        default:
+            break
+        }
+    }
+    func gameActionLastFrame(_ action: GameAction) {}
     
     static func collides(this: Entity, with: Entity) -> Bool {
         return arrayContains(array: this.collidesWithType, number: with.collisionType)
@@ -63,24 +127,18 @@ class Entity {
         return false
     }
     
-    func rectContainsPoint(rect: CGRect, point: CGPoint) -> Bool {
-        return (point.x >= rect.minX && point.x <= rect.maxX && point.y >= rect.minY && point.y <= rect.maxY)
-    }
-    
-    func updateSprite() {}
-    
-    func loadSprite() {
-        sprite = SKShapeNode()
-    }
-    
-    func getSpriteLayer() -> SKShapeNode {
-        return sprite
-    }
-    
     func removeSpriteFromParent() {
         if(sprite.parent != nil) {
             sprite.removeFromParent()
         }
+    }
+    
+    func rectContainsPoint(rect: CGRect, point: CGPoint) -> Bool {
+        return (point.x >= rect.minX && point.x <= rect.maxX && point.y >= rect.minY && point.y <= rect.maxY)
+    }
+    
+    func duplicate() -> Entity {
+        return Entity.init()
     }
     
     func equals(_ otherEntity: Entity) -> Bool {

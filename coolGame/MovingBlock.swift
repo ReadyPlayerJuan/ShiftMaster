@@ -8,7 +8,7 @@
 
 import Foundation
 import SpriteKit
-
+/*
 class MovingBlock: Entity {
     var startX = 0.0
     var startY = 0.0
@@ -314,4 +314,4 @@ class MovingBlock: Entity {
                 sprite.addChild(arrow2)
             }
     }
-}
+}*/

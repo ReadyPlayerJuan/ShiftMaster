@@ -95,19 +95,19 @@ class Stage {
      */
     
     class func loadTestingArea() -> Stage {
-        var stage =   [ [1, 1, 1, 1, 1, 1, 1, 1, 1, 1] ]
+        var stage = [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1]]
         stage.append([1, 0, 0, 0, 0, 0, 0, 0, 0, 1])
         stage.append([1, 0, 0, 0, 1, 0, 0, 0, 0, 1])
         stage.append([1, 0, 0, 0, 0, 0, 0, 0, 0, 1])
-        stage.append([1, 0, 0, 0, 0, 0, 1, 1, 1, 1])
-        stage.append([1, 0, 0, 0, 0, 0, 0, 0,-31,1])
-        stage.append([1, 0, 0,-50,0, 0, 0, 0, 0, 1])
-        stage.append([1, 0, 1, 1, 1, 1, 0, 0, 0, 1])
-        stage.append([1, 0, 0, 0, 0, 0, 0, 0, 0, 1])
+        stage.append([1, 0,99, 0, 99,99,1, 1, 1, 1])
+        stage.append([1, 0, 0, 0, 0, 0,99,99,-31,1])
+        stage.append([1, 0, 0,019,0, 0, 0,99, 0, 1])
+        stage.append([1, 0, 0, 1, 0, 0, 0, 0, 0, 1])
+        stage.append([1, 0, 0, 0, 0,013,0,014,0, 1])
         stage.append([1, 1, 1, 1, 1, 1, 1, 1, 1, 1])
-        let spawnPoint = CGPoint(x: 2, y: 5)
+        let spawnPoint = CGPoint(x: 1, y: 6)
         let exitTargets = [[8, 5, 0]]
-        let otherEntities: [Entity] = [PlayerGhost.init(startX: 5.0, startY: 8.0, appearMode: 1, actions: [PlayerGhost.ghostActions.fadeIn, PlayerGhost.ghostActions.moveRight(3.0), PlayerGhost.ghostActions.hingeRight, PlayerGhost.ghostActions.moveRight(3.0), PlayerGhost.ghostActions.hingeRight, PlayerGhost.ghostActions.fadeOut, PlayerGhost.ghostActions.moveRight(2.0), PlayerGhost.ghostActions.wait(1.0)])] //, LightSource.init(xPos: 2, yPos: 8, onPlayer: true)
+        let otherEntities: [Entity] = [/*PlayerGhost.init(startX: 5.0, startY: 8.0, appearMode: 1, actions: [PlayerGhost.ghostActions.fadeIn, PlayerGhost.ghostActions.moveRight(3.0), PlayerGhost.ghostActions.hingeRight, PlayerGhost.ghostActions.moveRight(3.0), PlayerGhost.ghostActions.hingeRight, PlayerGhost.ghostActions.fadeOut, PlayerGhost.ghostActions.moveRight(2.0), PlayerGhost.ghostActions.wait(1.0)])*/] //, LightSource.init(xPos: 2, yPos: 8, onPlayer: true)
         
         let s = Stage.init(withBlocks: stage, entities: otherEntities, spawn: spawnPoint, withName: "", exits: exitTargets, colorTheme: 0)
         s.stageTransitionType = 1
@@ -205,7 +205,7 @@ class Stage {
                             }
                         }
                         if(!invalid) {
-                            e = MovingBlock.init(color: (parameters[0]).toInt()!, dir: (parameters[1]).toInt()!, xPos: (parameters[2]).toDouble()!, yPos: (parameters[3]).toDouble()!)
+                            //e = MovingBlock.init(color: (parameters[0]).toInt()!, dir: (parameters[1]).toInt()!, xPos: (parameters[2]).toDouble()!, yPos: (parameters[3]).toDouble()!)
                         }
                         break
                     default:

@@ -10,48 +10,47 @@ import Foundation
 import SpriteKit
 
 extension Player {
-    func loadDeathEffect(delta: Double) {
+    func loadDeathEffect() {
         horizontalMovementTimer = 0
         verticalMovementTimer = 0
-        sprite.removeAllChildren()
         
         respawnEffect = SKShapeNode.init(path: getTrianglePath(corner: CGPoint(x: 0, y: 0), rotation: 0.0, size: Double(Board.blockSize)))
-        respawnEffect.fillColor = loadColor(colIndex: -1)
+        respawnEffect.fillColor = UIColor.white
         respawnEffect.strokeColor = UIColor.clear
-        respawnEffect.position = CGPoint(x: CGFloat(Board.blockSize)*(Board.spawnPoint.x - CGFloat(x)), y: CGFloat(Board.blockSize)*(-Board.spawnPoint.y + CGFloat(y)))
+        respawnEffect.position = CGPoint(x: CGFloat(Board.blockSize)*(Board.spawnPoint.x - CGFloat(x) - 0.5), y: CGFloat(Board.blockSize)*(-Board.spawnPoint.y + CGFloat(y) - 0.5))
         respawnEffect.alpha = 1.0
         sprite.addChild(respawnEffect)
         
-        let numTriangles = 3
+        let numTriangles = 4
         let size = (Double(Board.blockSize) / Double(numTriangles)) + 0.0
         
         let startingRotation = 0.2
-        let startingVel = 1.3
+        let startingVel = 1.0
         
         let diff = 0.1
         let s = SKShapeNode.init(path: getTrianglePath(corner: CGPoint(x: -diff - (size/2.0), y: -(size/2.0)*(sqrt(3.0)/2.0)), rotation: 0.0, size: size + 2*diff))
         s.strokeColor = UIColor.clear
-        deathParticleColor = loadColor(colIndex: colorIndex)
+        s.fillColor = deathParticleColor
+        //deathParticleColor = defaultSpriteColor
         s.alpha = 1.0
         s.zPosition = 1
         
         deathParticleInfo = []
         deathParticles = []
         
-        let blockSize = Double(Board.blockSize)
         var rotations: [Double] = []
-        switch(GameState.prevDirection) {
+        switch(preDeathDirection) {
         case 0:
             rotations = [0.0, 3.14159]
             break
         case 1:
-            rotations = [3.14159 * (1/2), 3.14159 * (3/2)]
+            rotations = [3.14159 * (0.5), 3.14159 * (1.5)]
             break
         case 2:
             rotations = [3.14159, 0.0]
             break
         case 3:
-            rotations = [3.14159 * (3/2), 3.14159 * (1/2)]
+            rotations = [3.14159 * (1.5), 3.14159 * (0.5)]
             break
         default: break
         }
@@ -106,7 +105,7 @@ extension Player {
         for _ in deathParticles {
             var angle = (Double(index)*(-2.0*3.14159)/Double(deathParticles.count)) + (3.14159 * (3.0 / 2.0)) + ((0.5-rand())*(3.14159 / 8))
             angle += ((rand() * 0.6) - 0.3) * 3.14159
-            deathParticleInfo.append([startingVel * cos(angle) + (prevXVel*blockSize / 3), startingVel * sin(angle) + (prevYVel*blockSize / -3), ((2.0*rand())-1)*startingRotation, (rand() * 0.3) + 0.3, -1])
+            deathParticleInfo.append([startingVel * cos(angle), startingVel * sin(angle), ((2.0*rand())-1)*startingRotation, (rand() * 0.3) + 0.3, -1])
             index += 1
         }
     }
@@ -115,7 +114,7 @@ extension Player {
         var p = CGPoint()
         let blockSize = Double(Board.blockSize)
         
-        switch(GameState.prevDirection) {
+        switch(preDeathDirection) {
         case 0:
             p = CGPoint(x: px, y: py)
             break
@@ -131,11 +130,11 @@ extension Player {
         default: break
         }
         
-        return p
+        return CGPoint(x: p.x - CGFloat(Board.blockSize / 2), y: p.y - CGFloat(Board.blockSize / 2))
     }
     
-    func updateDeathEffect() {
-        let time = 1-(GameState.deathTimer / GameState.deathTimerMax)
+    func updateDeathEffect(pct: Double) {
+        let time = pct
         let blockSize = Double(Board.blockSize)
         
         if(deathParticles.count > 0) {
@@ -147,28 +146,26 @@ extension Player {
                         let prevPoint = deathParticles[i].position
                         deathParticles[i].position = CGPoint(x: prevPoint.x + CGFloat(a[0]*velMod), y: prevPoint.y + CGFloat(a[1]*velMod))
                         deathParticles[i].zRotation += CGFloat(deathParticleInfo[i][2]*velMod)
-                        deathParticles[i].fillColor = deathParticleColor
-                        deathParticles[i].alpha = 1.0
+                        deathParticles[i].alpha = CGFloat(velMod)
                     } else {
                         let p = deathParticles[i]
-                        let target = CGPoint(x: -x + Double(Board.spawnPoint!.x), y: y - Double(Board.spawnPoint!.y))
+                        let target = CGPoint(x: -x + Double(Board.spawnPoint!.x), y: y - Double(Board.spawnPoint!.y) - (0.5 - (sqrt(3) / 6)))
                         
-                        deathParticleInfo[i] = [Double(target.x + 0.5)*blockSize, Double(target.y + 0.5)*blockSize, ((Double(Int(rand()*2)) - 0.5)*2), deathParticleInfo[i][3], 42069, Double(p.position.x),  Double(p.position.y), (rand() * 0.1) + 0.05]
+                        deathParticleInfo[i] = [Double(target.x + 0.0)*blockSize, Double(target.y + 0.0)*blockSize, time * -1 + (3.14159 * Double(Int(rand() * 2))), deathParticleInfo[i][3], 42069, (rand() * 0.5) + 0.75,  Double(p.position.y), (rand() * 0.1) + 0.05]
                     }
                 } else {
                     let info = deathParticleInfo[i]
-                    var progress = min((time - info[3]) / (1 - info[3] - info[7]), 1)
-                    progress = pow(progress, 2)
-                    let xPos = ((1 - progress) * info[5]) + (progress * deathParticleInfo[i][0])
-                    let yPos = ((1 - progress) * info[6]) + (progress * deathParticleInfo[i][1])
+                    let progress = min((time - info[3]) / (1 - info[3] - info[7]), 1)
+                    let progress2 = pow(progress, 2)
+                    let angle = deathParticleInfo[i][2] + (progress2 * 7)
+                    let xPos = deathParticleInfo[i][0] + ((1 - progress) * Board.blockSize * deathParticleInfo[i][5] * 2.0 * cos(angle))
+                    let yPos = deathParticleInfo[i][1] + ((1 - progress) * Board.blockSize * deathParticleInfo[i][5] * 2.0 * sin(angle))
                     deathParticles[i].position = CGPoint(x: xPos, y: yPos)
                     deathParticles[i].zRotation += CGFloat(progress / 4)
                     
-                    let rgb = getColor(colIndex: colorIndex)
-                    let prog2 = min(1, progress * 1.3)
-                    deathParticles[i].fillColor = UIColor.init(red: rgb[0] + (CGFloat(prog2) * (1-rgb[0])), green: rgb[1] + (CGFloat(prog2) * (1-rgb[1])), blue: rgb[2] + (CGFloat(prog2) * (1-rgb[2])), alpha: 1.0)
-                    progress = pow(progress, 3)
-                    deathParticles[i].alpha = CGFloat(1 - progress)
+                    //let prog2 = min(1, progress * 1.3)
+                    deathParticles[i].fillColor = UIColor.white
+                    deathParticles[i].alpha = CGFloat((1 - progress) * progress * 4)
                 }
             }
         }

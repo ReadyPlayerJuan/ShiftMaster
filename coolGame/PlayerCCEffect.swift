@@ -9,7 +9,7 @@
 import Foundation
 import SpriteKit
 
-extension Player {
+/*extension Player {
     func loadColorChangeEffect() {
         horizontalMovementTimer = 0
         verticalMovementTimer = 0
@@ -23,7 +23,7 @@ extension Player {
         let diff = 0.1
         let s = SKShapeNode.init(path: getTrianglePath(corner: CGPoint(x: -diff, y: -0.0), rotation: 0.0, size: size + 2*diff))
         s.strokeColor = UIColor.clear
-        s.fillColor = newColor!
+        //s.fillColor = newColor!
         s.zPosition = 1
         
         for ty in stride(from: 0, to: numTriangles, by: 1) {
@@ -143,18 +143,18 @@ extension Player {
     }
     
     func finishedChangingColor() {
-        color = newColor
+        //color = newColor
         colorIndex = newColorIndex
         newColorIndex = -1
-        newColor = loadColor(colIndex: newColorIndex)
-        sprite.fillColor = color
+        //newColor = loadColor(colIndex: newColorIndex)
+        //sprite.fillColor = color
         sprite.removeAllChildren()
         
         collidesWithType = [0]
         collidesWithType.append(colorIndex+10)
         
         if(colorIndex == -1) {
-            GameState.beginStageTransition()
+            //GameState.beginStageTransition()
         }
     }
     
@@ -167,4 +167,4 @@ extension Player {
         }
         return -1
     }
-}
+}*/

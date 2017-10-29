@@ -28,7 +28,7 @@ class InputButton {
         sprite.strokeColor = UIColor.clear
         sprite.fillColor = InputController.buttonColor
         sprite.alpha = alpha
-        sprite.zPosition = 500
+        sprite.zPosition = 0
         sprite.position = CGPoint.init(x: x, y: y)
     }
     

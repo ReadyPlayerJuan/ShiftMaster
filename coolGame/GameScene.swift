@@ -11,9 +11,10 @@ import SpriteKit
 import GameplayKit
 
 class GameScene: SKScene {
-    var drawNode: SKShapeNode!
-    var rotateNode: SKShapeNode!
-    var superNode: SKShapeNode!
+    var drawNode: SKNode!
+    var rotateNode: SKNode!
+    var superNode: SKNode!
+    var inputNode: SKNode!
     
     static let screenHeight = UIScreen.main.fixedCoordinateSpace.bounds.width
     static let screenWidth = UIScreen.main.fixedCoordinateSpace.bounds.height
@@ -26,6 +27,10 @@ class GameScene: SKScene {
     
     override func didMove(to view: SKView) {
         mainView = view
+        if(GameState.allActions.count == 0) {
+            GameState.initGameActions()
+        }
+        ShadersMaster.initShaders()
         beginGame()
     }
     
@@ -35,15 +40,14 @@ class GameScene: SKScene {
         
         GameState.gamescene = self
         
-        superNode = SKShapeNode.init(rect: CGRect(x: 0, y: 0, width: 1, height: 1))
-        superNode.strokeColor = UIColor.clear
-        superNode.fillColor = UIColor.clear
-        drawNode = SKShapeNode.init(rect: CGRect(x: 0, y: 0, width: 1, height: 1))
-        drawNode.strokeColor = UIColor.clear
-        drawNode.fillColor = UIColor.clear
-        rotateNode = SKShapeNode.init(rect: CGRect(x: 0, y: 0, width: 1, height: 1))
-        rotateNode.strokeColor = UIColor.clear
-        rotateNode.fillColor = UIColor.clear
+        superNode = SKNode.init()
+        drawNode = SKNode.init()
+        rotateNode = SKNode.init()
+        inputNode = SKNode.init()
+        inputNode.zPosition = 500
+        
+        self.shader = PostShaders.invertShader
+        self.shouldEnableEffects = true
         
         addChild(superNode)
         superNode.addChild(rotateNode)
@@ -52,8 +56,10 @@ class GameScene: SKScene {
         GameState.drawNode = drawNode
         GameState.rotateNode = rotateNode
         GameState.superNode = superNode
+        GameState.inputNode = inputNode
         
-        InputController.inputButtonNode = superNode
+        InputController.inputButtonNode = inputNode
+        superNode.addChild(inputNode)
         InputController.initElements()
         
         Camera.drawNode = drawNode

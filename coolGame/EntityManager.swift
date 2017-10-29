@@ -22,6 +22,15 @@ class EntityManager {
         entity.update(delta: 0.0)
     }
     
+    static func removeEntity(entity: Entity) {
+        for i in 0...entities.count-1 {
+            if(entities[i].ID == entity.ID) {
+                entities.remove(at: i)
+                return
+            }
+        }
+    }
+    
     static func addParticle(particle: Particle) {
         particles.append(particle)
         GameState.drawNode.addChild(particle.sprite)
@@ -29,13 +38,13 @@ class EntityManager {
     }
     
     static func updateEntities(delta: TimeInterval) {
-        if let p = (EntityManager.getPlayer()) {
+        /*if let p = (EntityManager.getPlayer()) {
             let vel = hypot(p.xVel, p.yVel)
             if(vel > 1) {
                 collisionIterations = Int(vel)+3
             }
-        }
-        
+        }*/
+        collisionIterations = 3
         
         
         for e in entities {
@@ -71,6 +80,14 @@ class EntityManager {
                 i += 1
             }
         }
+        
+        updateEntityAttributes()
+    }
+    
+    static func updateEntityAttributes() {
+        for e in entities {
+            e.updateAttributes()
+        }
     }
     
     static func checkForCollision() {
@@ -91,13 +108,19 @@ class EntityManager {
         }
     }
     
-    static func updateEntitySprites() {
+    static func gameActionFirstFrame(_ action: GameAction) {
         for e in entities {
-            e.updateSprite()
+            e.gameActionFirstFrame(action)
         }
     }
     
-    static func redrawEntities(node: SKShapeNode, name: String) {
+    static func gameActionLastFrame(_ action: GameAction) {
+        for e in entities {
+            e.gameActionLastFrame(action)
+        }
+    }
+    
+    static func redrawEntities(node: SKNode, name: String) {
         if(name == "all") {
             if(node.children.count != 0) {
                 for sprite in node.children {
@@ -118,7 +141,7 @@ class EntityManager {
             node.addChild(EntityManager.getPlayer()!.sprite)
         }
     }
-    
+    /*
     static func reloadBlocks() {
         var temp = [Entity]()
         for e in entities {
@@ -133,12 +156,12 @@ class EntityManager {
                 addEntity(entity: Board.blocks[row][col]!)
             }
         }
-    }
+    }*/
     
     static func reloadAllEntities() {
         for e in entities {
             e.removeSpriteFromParent()
-            e.loadSprite()
+            e.load()
         }
         redrawEntities(node: GameState.drawNode, name: "all")
     }
@@ -147,7 +170,7 @@ class EntityManager {
         var temp = [Entity]()
         
         for e in entities {
-            if(hypot(e.x - entity.x, e.y - entity.y) <= radius
+            if(!e.isInactive && hypot(e.x - entity.x, e.y - entity.y) <= radius
                     && e.ID != entity.ID && entity.collisionPriority <= e.collisionPriority) {
                 temp.append(e)
             }
@@ -186,14 +209,14 @@ class EntityManager {
         print("no player found")
         return nil
     }
-    
+    /*
     static func loadLightSources() {
         for e in entities {
             if(e.name == "light source") {
                 (e as! LightSource).loadStageInfo()
             }
         }
-    }
+    }*/
     
     static func getID() -> Int {
         nextID += 1
